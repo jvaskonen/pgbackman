@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # Copyright (c) 2013-2014 Rafael Martinez Guerrero / PostgreSQL-es
 # rafael@postgresql.org.es / http://www.postgresql.org.es/
@@ -3252,7 +3252,7 @@ class PgbackmanDB():
         """
         A function to get all backup definitions registered in a backup server
         """
-
+        
         try:
             self.pg_connect()
 
@@ -3271,6 +3271,30 @@ class PgbackmanDB():
         except psycopg2.Error as e:
             raise e
 
+    # ############################################
+    # Method
+    # ############################################
+
+    def get_backup_server_configured_versions(self,backup_server_id):
+        """A function to get a list of all postgresql version that have been configured for a backup server"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT parameter FROM backup_server_config WHERE parameter ~ $$^pgsql_bin_$$ and server_id = %s',(backup_server_id,))
+                    self.conn.commit()
+
+                    return self.cur
+
+                except psycopg2.Error as e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
 
     # ############################################
     # Method

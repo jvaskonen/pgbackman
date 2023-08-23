@@ -4,12 +4,13 @@
 # Autor: Rafael Martinez <rafael@postgreslq.org.es>
 #  
 
-%define majorversion 1.2
-%define minorversion 0
+%define majorversion 1.3
+%define minorversion 1
 %define pbm_owner pgbackman
 %define pbm_group pgbackman
-%{!?pybasever: %define pybasever %(python -c "import sys;print(sys.version[0:3])")}
-%{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%define __python /usr/bin/python2
+%{!?pybasever: %define pybasever %(python2 -c "import sys;print(sys.version[0:3])")}
+%{!?python_sitelib: %define python_sitelib %(python2 -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Summary:        PostgreSQL backup manager
 Name:           pgbackman
@@ -21,7 +22,7 @@ Url:            http://www.pgbackman.org/
 Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 BuildArch:      noarch
-Requires:       python-psycopg2 >= 2.4.0, python-argparse, at, cronie, python-setuptools, shadow-utils, logrotate
+Requires:       python2-psycopg2 >= 2.4.0, at, cronie, python2-setuptools, shadow-utils, logrotate
 
 %description 
 PgBackMan is a tool for managing PostgreSQL logical backups created
@@ -40,11 +41,12 @@ elements associated to it.
 %setup -n %{name}-%{version} -q
 
 %build
-python setup.py build
+python2 setup.py build
 
 %install
-python setup.py install -O1 --skip-build --root %{buildroot}
+python2 setup.py install -O1 --skip-build --root %{buildroot}
 mkdir -p %{buildroot}/var/lib/%{name}
+mkdir -p %{buildroot}/var/log/%{name}
 touch %{buildroot}/var/log/%{name}/%{name}.log
 
 %clean
@@ -72,6 +74,9 @@ useradd -M -N -g pgbackman -r -d /var/lib/pgbackman -s /bin/bash \
         -c "PostgreSQL Backup Manager" pgbackman >/dev/null 2>&1 || :
 
 %changelog
+* Wed May 25 2023 - James Miller <jvaskonen@toastaddict.org> 1.3.1-1
+- New release 1.3.1
+
 * Tue Jun 13 2017 - Rafael Martinez Guerrero <rafael@postgresql.org.es> 1.2.0-1
 - New release 1.0.0
 

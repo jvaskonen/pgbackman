@@ -3,11 +3,11 @@ PgBackMan - Administrador de copias de seguridad
 ================================================
 
 |
-| Versión-1.2.0
+| Versión-1.3.1
 |
 | Autor: Rafael Martinez Guerrero (Universidad de Oslo)
 | Correo electrónico: rafael@postgresql.org.es
-| Código fuente: https://github.com/rafaelma/pgbackman
+| Código fuente: https://github.com/jvaskonen/pgbackman
 | Web: http://www.pgbackman.org/
 |
 

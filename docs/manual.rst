@@ -3,11 +3,11 @@ PgBackMan - PostgreSQL Backup Manager
 =====================================
 
 |
-| Version-1.2.0
+| Version-1.3.1
 |
 | Author: Rafael Martinez Guerrero (University of Oslo)
 | E-mail: rafael@postgresql.org.es
-| Source: https://github.com/rafaelma/pgbackman
+| Source: https://github.com/jvaskonen/pgbackman
 | Web: http://www.pgbackman.org/
 |
 
@@ -2916,3 +2916,5 @@ General Public License 3.
 
 | Copyright © 2013-2014 Rafael Martinez Guerrero / PostgreSQL-es
 | Copyright © 2014 USIT-University of Oslo.
+
+Repackaged with minor modifications by James Miller in 2023
