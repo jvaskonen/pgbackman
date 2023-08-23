@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # Copyright (c) 2013-2014 Rafael Martinez Guerrero / PostgreSQL-es
 # rafael@postgresql.org.es / http://www.postgresql.org.es/
@@ -48,7 +48,9 @@ try:
                      ('/etc/logrotate.d', ['etc/pgbackman.logrotate']),
                      ('/usr/share/pgbackman/', ['sql/pgbackman.sql']),
                      ('/usr/share/pgbackman/', ['sql/pgbackman_2.sql']),
-                     ('/usr/share/pgbackman/', ['sql/pgbackman_3.sql'])]
+                     ('/usr/share/pgbackman/', ['sql/pgbackman_3.sql']),
+                     ('/usr/share/pgbackman/', ['sql/pgbackman_4.sql']),
+                     ('/usr/share/pgbackman/', ['sql/pgbackman_5.sql'])]
     #
     # Check linux distribution and define init script
     #
