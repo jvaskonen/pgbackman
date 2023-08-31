@@ -30,6 +30,7 @@ import signal
 import shlex
 import datetime
 import subprocess
+import re
 import readline
 import socket
 import json
@@ -61,7 +62,7 @@ class PgbackmanCli(cmd.Cmd):
 
     def __init__(self):
         cmd.Cmd.__init__(self)
-        
+
         try:
             self.software_version_tag = self.get_pgbackman_software_version_tag()
             self.software_version_number = self.get_pgbackman_software_version_number()
@@ -4679,14 +4680,10 @@ class PgbackmanCli(cmd.Cmd):
 
         COMMAND:
         update_backup_server_config [SrvID / FQDN]
-                                    [PgSQL_bin_9.0]
-                                    [PgSQL_bin_9.1]
-                                    [PgSQL_bin_9.2]
-                                    [PgSQL_bin_9.3]
-                                    [PgSQL_bin_9.4]
-                                    [PgSQL_bin_9.5]
-                                    [PgSQL_bin_9.6]
-                                    [PgSQL_bin_10]
+                                    [pgbackman_dump_command]
+                                    [pgbackman_restore_command]
+                                    [admin_user]
+                                    [domain]
                                     [root_backup_dir]
                                     
         '''    
@@ -4739,15 +4736,11 @@ class PgbackmanCli(cmd.Cmd):
                 return False
         
             try:
-                pgsql_bin_9_0_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_0')
-                pgsql_bin_9_1_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_1')
-                pgsql_bin_9_2_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_2')
-                pgsql_bin_9_3_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_3')
-                pgsql_bin_9_4_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_4')
-                pgsql_bin_9_5_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_5')
-                pgsql_bin_9_6_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_6')
-                pgsql_bin_10_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_10')
-                root_backup_partition_default = self.db.get_backup_server_config_value(backup_server_id,'root_backup_partition')
+                pgbackman_dump_command_default    = self.db.get_backup_server_config_value(backup_server_id,'pgbackman_dump')
+                pgbackman_restore_command_default = self.db.get_backup_server_config_value(backup_server_id,'pgbackman_restore')
+                admin_user_default                = self.db.get_backup_server_config_value(backup_server_id,'admin_user')
+                domain_default                    = self.db.get_backup_server_config_value(backup_server_id,'domain')
+                root_backup_partition_default     = self.db.get_backup_server_config_value(backup_server_id,'root_backup_partition')
                                                 
             except Exception as e:
                 print '--------------------------------------------------------'            
@@ -4755,15 +4748,11 @@ class PgbackmanCli(cmd.Cmd):
                 return False
 
             try:
-                pgsql_bin_9_0 = raw_input('# PgSQL bindir 9.0 [' + pgsql_bin_9_0_default + ']: ').strip()
-                pgsql_bin_9_1 = raw_input('# PgSQL bindir 9.1 [' + pgsql_bin_9_1_default + ']: ').strip()
-                pgsql_bin_9_2 = raw_input('# PgSQL bindir 9.2 [' + pgsql_bin_9_2_default + ']: ').strip()
-                pgsql_bin_9_3 = raw_input('# PgSQL bindir 9.3 [' + pgsql_bin_9_3_default + ']: ').strip()
-                pgsql_bin_9_4 = raw_input('# PgSQL bindir 9.4 [' + pgsql_bin_9_4_default + ']: ').strip()
-                pgsql_bin_9_5 = raw_input('# PgSQL bindir 9.5 [' + pgsql_bin_9_5_default + ']: ').strip()
-                pgsql_bin_9_6 = raw_input('# PgSQL bindir 9.6 [' + pgsql_bin_9_6_default + ']: ').strip()
-                pgsql_bin_10 = raw_input('# PgSQL bindir 10 [' + pgsql_bin_10_default + ']: ').strip()
-                root_backup_partition = raw_input('# Main backup dir [' + root_backup_partition_default + ']: ').strip()
+                pgbackman_dump_command    = raw_input('# pgbackman_dump command [' + pgbackman_dump_command_default + ']: ').strip()
+                pgbackman_restore_command = raw_input('# pgbackman_restore command [' + pgbackman_restore_command_default + ']: ').strip()
+                admin_user                = raw_input('# Admin user [' + admin_user_default + ']: ').strip()
+                domain                    = raw_input('# Domain [' + domain_default + ']: ').strip()
+                root_backup_partition     = raw_input('# Main backup dir [' + root_backup_partition_default + ']: ').strip()
                 print
 
                 while ack != 'yes' and ack != 'no':
@@ -4776,29 +4765,17 @@ class PgbackmanCli(cmd.Cmd):
                 print '[ABORTED] Command interrupted by the user.\n'
                 return False   
 
-            if pgsql_bin_9_0  == '': 
-                pgsql_bin_9_0 = pgsql_bin_9_0_default
+            if pgbackman_dump_command == '': 
+                pgbackman_dump_command = pgbackman_dump_command_default
 
-            if pgsql_bin_9_1  == '': 
-                pgsql_bin_9_1 = pgsql_bin_9_1_default
+            if pgbackman_restore_command == '': 
+                pgbackman_restore_command = pgbackman_restore_command_default
 
-            if pgsql_bin_9_2  == '': 
-                pgsql_bin_9_2 = pgsql_bin_9_2_default
+            if admin_user == '': 
+                admin_user = admin_user_default
 
-            if pgsql_bin_9_3  == '': 
-                pgsql_bin_9_3 = pgsql_bin_9_3_default
-
-            if pgsql_bin_9_4  == '': 
-                pgsql_bin_9_4 = pgsql_bin_9_4_default
-
-            if pgsql_bin_9_5  == '': 
-                pgsql_bin_9_5 = pgsql_bin_9_5_default
-
-            if pgsql_bin_9_6  == '': 
-                pgsql_bin_9_6 = pgsql_bin_9_6_default
-
-            if pgsql_bin_10  == '': 
-                pgsql_bin_10 = pgsql_bin_10_default
+            if domain == '': 
+                domain = domain_default
 
             if root_backup_partition == '':
                 root_backup_partition = root_backup_partition_default
@@ -4806,7 +4783,12 @@ class PgbackmanCli(cmd.Cmd):
 
             if ack.lower() == 'yes':
                 try:
-                    self.db.update_backup_server_config(backup_server_id,pgsql_bin_9_0,pgsql_bin_9_1,pgsql_bin_9_2,pgsql_bin_9_3,pgsql_bin_9_4,pgsql_bin_9_5,pgsql_bin_9_6,pgsql_bin_10,root_backup_partition)
+                    self.db.update_backup_server_config(backup_server_id,
+                                                        pgbackman_dump_command,
+                                                        pgbackman_restore_command,
+                                                        admin_user,
+                                                        domain,
+                                                        root_backup_partition)
                     
                     print '[DONE] Configuration parameters for SrvID: ' + str(backup_server_id) + ' updated.\n'
 
@@ -4820,7 +4802,7 @@ class PgbackmanCli(cmd.Cmd):
         # Command with parameters
         #
                 
-        elif len(arg_list) == 10:
+        elif len(arg_list) == 6:
             
             backup_server = arg_list[0]
 
@@ -4839,59 +4821,44 @@ class PgbackmanCli(cmd.Cmd):
                 return False
         
             try:
-                pgsql_bin_9_0_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_0')
-                pgsql_bin_9_1_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_1')
-                pgsql_bin_9_2_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_2')
-                pgsql_bin_9_3_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_3')
-                pgsql_bin_9_4_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_4')
-                pgsql_bin_9_5_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_5')
-                pgsql_bin_9_6_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_9_6')
-                pgsql_bin_10_default = self.db.get_backup_server_config_value(backup_server_id,'pgsql_bin_10')
-                root_backup_partition_default = self.db.get_backup_server_config_value(backup_server_id,'root_backup_partition')
+                pgbackman_dump_command_default    = self.db.get_backup_server_config_value(backup_server_id,'pgbackman_dump_command')
+                pgbackman_restore_command_default = self.db.get_backup_server_config_value(backup_server_id,'pgbackman_restore_command')
+                admin_user_default                = self.db.get_backup_server_config_value(backup_server_id,'admin_user')
+                domain_default                    = self.db.get_backup_server_config_value(backup_server_id,'domain')
+                root_backup_partition_default     = self.db.get_backup_server_config_value(backup_server_id,'root_backup_partition')
                 
             except Exception as e:
                 self.processing_error('[ERROR]: Problems getting default values for parameters\n' + str(e) + '\n')
                 return False
             
-            pgsql_bin_9_0 = arg_list[1]
-            pgsql_bin_9_1 = arg_list[2]
-            pgsql_bin_9_2 = arg_list[3]
-            pgsql_bin_9_3 = arg_list[4]
-            pgsql_bin_9_4 = arg_list[5]
-            pgsql_bin_9_5 = arg_list[6]
-            pgsql_bin_9_6 = arg_list[7]
-            pgsql_bin_10 = arg_list[8]
-            root_backup_partition = arg_list[9]
+            pgbackman_dump_command_default    = arg_list[1]
+            pgbackman_restore_command_default = arg_list[2]
+            admin_user_default                = arg_list[3]
+            domain_default                    = arg_list[4]
+            root_backup_partition_default     = arg_list[5]
 
-            if pgsql_bin_9_0  == '': 
-                pgsql_bin_9_0 = pgsql_bin_9_0_default
+            if pgbackman_dump_command == '': 
+                pgbackman_dump_command = pgbackman_dump_command_default
 
-            if pgsql_bin_9_1  == '': 
-                pgsql_bin_9_1 = pgsql_bin_9_1_default
+            if pgbackman_restore_command == '': 
+                pgbackman_restore_command = pgbackman_restore_command_default
 
-            if pgsql_bin_9_2  == '': 
-                pgsql_bin_9_2 = pgsql_bin_9_2_default
+            if admin_user == '': 
+                admin_user = admin_user_default
 
-            if pgsql_bin_9_3  == '': 
-                pgsql_bin_9_3 = pgsql_bin_9_3_default
-
-            if pgsql_bin_9_4  == '': 
-                pgsql_bin_9_4 = pgsql_bin_9_4_default
-
-            if pgsql_bin_9_5  == '': 
-                pgsql_bin_9_5 = pgsql_bin_9_5_default
-
-            if pgsql_bin_9_6  == '': 
-                pgsql_bin_9_6 = pgsql_bin_9_6_default
-
-            if pgsql_bin_10  == '': 
-                pgsql_bin_10 = pgsql_bin_10_default
+            if domain == '': 
+                domain = domain_default
 
             if root_backup_partition == '':
                 root_backup_partition = root_backup_partition_default
 
             try:
-                self.db.update_backup_server_config(backup_server_id,pgsql_bin_9_0,pgsql_bin_9_1,pgsql_bin_9_2,pgsql_bin_9_3,pgsql_bin_9_4,pgsql_bin_9_5,pgsql_bin_9_6,pgsql_bin_10,root_backup_partition)
+                self.db.update_backup_server_config(backup_server_id,
+                                                    pgbackman_dump_command,
+                                                    pgbackman_restore_command,
+                                                    admin_user,
+                                                    domain,
+                                                    root_backup_partition)
                 
                 print '[DONE] Configuration parameters for SrvID: ' + str(backup_server_id) + ' updated.\n'
 
@@ -4902,6 +4869,730 @@ class PgbackmanCli(cmd.Cmd):
             self.processing_error('\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n')
             
         print
+
+    # ############################################
+    # Method do_register_backup_server_pg_bin_dir
+    # ############################################
+
+    def do_register_backup_server_pg_bin_dir(self,args):
+        '''
+        DESCRIPTION:
+        This command configures the binary path for a given version of postgres 
+        on the specificed backup server 
+
+        COMMAND:
+        register_backup_server_pg_bin_dir [SrvID / FQDN]
+                                          [postgres_version]
+                                          [bin_dir]
+                                    
+        '''    
+
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print '--------------------------------------------------------'            
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Check argument count
+        #
+
+        if len(arg_list) > 0 and len(arg_list) != 3:
+            self.processing_error('\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n')
+
+        #
+        # Default backup server
+        #
+            
+        default_backup_server = self.get_default_backup_server()
+
+        postgres_version = ''
+        bin_dir          = None
+
+        #
+        # Get the backup server id and postgres version being configured
+        #
+        
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+
+            try:
+                print '--------------------------------------------------------'
+                backup_server = raw_input('# SrvID / FQDN [' + default_backup_server + ']: ').strip()
+
+                while not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                    postgres_version = raw_input('# Postgres Version: ').strip()
+                    if not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                        print '"' + postgres_version + '" does not appear to be a valid postgres version'
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+            
+        else:
+            # When arguments are provided
+
+            backup_server    = arg_list[0]
+            postgres_version = arg_list[1]
+
+        #
+        # Normalize backup server to numeric id
+        #
+        
+        try:
+            if backup_server == '':
+                backup_server = default_backup_server
+
+            if not backup_server.isdigit():
+                backup_server = self.db.get_backup_server_id(backup_server)
+                    
+        except Exception as e:
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Use the version to derive the defaults for the other values
+        #
+
+        bin_dir_default = '/usr/pgsql-' + str(postgres_version).replace('_','.') + '/bin'
+        description     = 'postgreSQL ' + str(postgres_version).replace('_','.') + ' bin directory'
+        
+        #
+        # Get the binary path parameter
+        #
+
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+            
+            ack = ''
+
+            try:
+                bin_dir     = raw_input('# Postgres binary directory: [' + bin_dir_default + ']: ').strip()
+                print
+
+                while ack != 'yes' and ack != 'no':
+                    ack = raw_input('# Are all values to update correct (yes/no): ')
+
+                print '--------------------------------------------------------'
+                
+                if ack.lower() == 'no':
+                    print '[ABORTED] Command interrupted by the user.\n'
+                    return False
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+        
+        else:
+            # When no arguements are provided
+            bin_dir     = arg_list[2]
+            
+        # change any .s in the version to _s to because that's what the backend function expects
+        postgres_version = postgres_version.replace('.','_')
+
+        if bin_dir == '':
+            bin_dir = bin_dir_default
+
+        try:
+            self.db.register_backup_server_pg_bin_dir(backup_server,
+                                                      postgres_version,
+                                                      bin_dir,
+                                                      description)
+                    
+            print '[DONE] Configured postgres ' + str(postgres_version) + ' for SrvID: ' + str(backup_server) + '.\n'
+
+        except Exception as e:
+            self.processing_error('[ERROR]: Could not update the configuration for this Backup server \n' + str(e) + '\n')
+
+    # ############################################
+    # Method do_update_backup_server_pg_bin_dir
+    # ############################################
+
+    def do_update_backup_server_pg_bin_dir(self,args):
+        '''
+        DESCRIPTION:
+        This command updates the configrued binary path for a given version of postgres 
+        on the specificed backup server 
+
+        COMMAND:
+        update_backup_server_pg_bin_dir [SrvID / FQDN]
+                                        [postgres_version]
+                                        [bin_dir]
+                                    
+        '''    
+
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print '--------------------------------------------------------'            
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Check argument count
+        #
+
+        if len(arg_list) > 0 and len(arg_list) != 3:
+            self.processing_error('\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n')
+
+        #
+        # Default backup server
+        #
+            
+        default_backup_server = self.get_default_backup_server()
+
+        #
+        # Get the backup server and postgres version being edited
+        #
+        
+        postgres_version = ''
+        bin_dir          = None
+        bin_dir_default  = None
+        
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+
+            try:
+                print '--------------------------------------------------------'
+                backup_server = raw_input('# SrvID / FQDN [' + default_backup_server + ']: ').strip()
+
+                while not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                    postgres_version = raw_input('# Postgres Version: ').strip()
+                    if not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                        print '"' + postgres_version + '" does not appear to be a valid postgres version'
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+            
+        else:
+            # When arguments are provided
+
+            backup_server    = arg_list[0]
+            postgres_version = arg_list[1]
+
+        #
+        # Normalize backup server to numeric id
+        #
+        
+        try:
+            if backup_server == '':
+                backup_server = default_backup_server
+
+            if not backup_server.isdigit():
+                backup_server = self.db.get_backup_server_id(backup_server)
+                    
+        except Exception as e:
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Fetch this server's current setting to use as the default
+        #
+
+        postgres_version = postgres_version.replace('.','_')
+        version_bin_dir_label = 'pgsql_bin_' + str(postgres_version)
+
+        try:
+            bin_dir_default = self.db.get_backup_server_config_value(backup_server,version_bin_dir_label)
+                
+        except Exception as e:
+            self.processing_error('[ERROR]: Problems getting default values for parameters\n' + str(e) + '\n')
+            return False
+        
+        #
+        # Get the new binary path
+        #
+
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+            
+            ack = ''
+
+            try:
+                bin_dir = raw_input('# Postgres binary directory: [' + bin_dir_default + ']: ').strip()
+                print
+
+                while ack != 'yes' and ack != 'no':
+                    ack = raw_input('# Are all values to update correct (yes/no): ')
+
+                print '--------------------------------------------------------'
+                
+                if ack.lower() == 'no':
+                    print '[ABORTED] Command interrupted by the user.\n'
+                    return False
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+        
+        else:
+            # When no arguements are provided
+            bin_dir = arg_list[2]
+            
+        if bin_dir == '':
+            bin_dir = bin_dir_default
+
+        try:
+            self.db.update_backup_server_pg_bin_dir(backup_server,
+                                                    postgres_version,
+                                                    bin_dir)
+                    
+            print '[DONE] Binary directory for postgres ' + str(postgres_version) + ' for SrvID: ' + str(backup_server) + ' updated.\n'
+
+        except Exception as e:
+            self.processing_error('[ERROR]: Could not update the configuration for this Backup server \n' + str(e) + '\n')
+
+    # ############################################
+    # Method do_delete_backup_server_pg_bin_dir
+    # ############################################
+
+    def do_delete_backup_server_pg_bin_dir(self,args):
+        '''
+        DESCRIPTION:
+        This command drops support for a given version of postgres on the
+        specificed backup server 
+
+        COMMAND:
+        update_backup_server_pg_bin_dir [SrvID / FQDN]
+                                        [postgres_version]
+                                    
+        '''    
+
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print '--------------------------------------------------------'            
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Check argument count
+        #
+
+        if len(arg_list) > 0 and len(arg_list) != 2:
+            self.processing_error('\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n')
+
+        #
+        # Default backup server
+        #
+            
+        default_backup_server = self.get_default_backup_server()
+
+        #
+        # Get the backup server and postgres version being edited
+        #
+        
+        postgres_version = ''
+        
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+            
+            try:
+                ack = ''
+
+                print '--------------------------------------------------------'
+                backup_server = raw_input('# SrvID / FQDN [' + default_backup_server + ']: ').strip()
+
+                while not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                    postgres_version = raw_input('# Postgres Version: ').strip()
+                    if not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                        print '"' + postgres_version + '" does not appear to be a valid postgres version'
+
+                while ack != 'yes' and ack != 'no':
+                    ack = raw_input('# Are you sure you want to drop support for this version of postgres (yes/no): ')
+
+                print '--------------------------------------------------------'
+                
+                if ack.lower() == 'no':
+                    print '[ABORTED] Command interrupted by the user.\n'
+                    return False
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+            
+        else:
+            # When arguments are provided
+
+            backup_server    = arg_list[0]
+            postgres_version = arg_list[1]
+
+        #
+        # Normalize backup server to numeric id
+        #
+        
+        try:
+            if backup_server == '':
+                backup_server = default_backup_server
+
+            if not backup_server.isdigit():
+                backup_server = self.db.get_backup_server_id(backup_server)
+                    
+        except Exception as e:
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        postgres_version = postgres_version.replace('.','_')
+        version_bin_dir_label = 'pgsql_bin_' + str(postgres_version)
+
+        try:
+            self.db.delete_backup_server_pg_bin_dir(backup_server,
+                                                    postgres_version)
+                    
+            print '[DONE] Dropped postgres ' + str(postgres_version) + ' for SrvID: ' + str(backup_server) + '.\n'
+
+        except Exception as e:
+            self.processing_error('[ERROR]: Could not update the configuration for this Backup server \n' + str(e) + '\n')
+
+    # ########################################################
+    # Method do_show_backup_server_default_configured_versions
+    # ########################################################
+
+    def do_show_backup_server_default_configured_versions(self,args):
+        '''
+        DESCRIPTION:
+        This command lists the versions of postgres configured on backup
+        servers by default
+
+        COMMAND:
+        do_show_backup_server_configured_versions
+                                    
+        '''    
+
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print '--------------------------------------------------------'            
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Check argument count
+        #
+
+        if len(arg_list) > 0:
+            self.processing_error('\n[ERROR] - This command does not accept parameters.\n          Type help or ? to list commands\n')
+
+        try:
+            result = self.db.show_backup_server_default_configured_versions()
+            self.generate_output(result,['Version','Binary Path'],['parameter','value'],'backup_server_default_postgres_versions')
+
+        except Exception as e:
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+
+    # ###################################################
+    # Method do_register_backup_server_default_pg_bin_dir
+    # ###################################################
+
+    def do_register_backup_server_default_pg_bin_dir(self,args):
+        '''
+        DESCRIPTION:
+        This command configures the default binary directory to use for a given
+        version of postgres 
+
+        COMMAND:
+        register_backup_server_default_pg_bin_dir [postgres_version]
+                                                  [bin_dir]
+                                    
+        '''    
+
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print '--------------------------------------------------------'            
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Check argument count
+        #
+
+        if len(arg_list) > 0 and len(arg_list) != 2:
+            self.processing_error('\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n')
+
+        postgres_version = ''
+        bin_dir          = None
+
+        #
+        # Get the postgres version being configured
+        #
+        
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+
+            try:
+                print '--------------------------------------------------------'
+
+                while not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                    postgres_version = raw_input('# Postgres Version: ').strip()
+                    if not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                        print '"' + postgres_version + '" does not appear to be a valid postgres version'
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+            
+        else:
+            # When arguments are provided
+
+            postgres_version = arg_list[0]
+
+        #
+        # Use the version to derive the defaults for the other values
+        #
+
+        bin_dir_default = '/usr/pgsql-' + str(postgres_version).replace('_','.') + '/bin'
+        description     = 'postgreSQL ' + str(postgres_version).replace('_','.') + ' bin directory'
+        
+        #
+        # Get the binary directory parameter
+        #
+
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+            
+            ack = ''
+
+            try:
+                bin_dir     = raw_input('# Postgres binary directory: [' + bin_dir_default + ']: ').strip()
+                print
+
+                while ack != 'yes' and ack != 'no':
+                    ack = raw_input('# Are all values to update correct (yes/no): ')
+
+                print '--------------------------------------------------------'
+                
+                if ack.lower() == 'no':
+                    print '[ABORTED] Command interrupted by the user.\n'
+                    return False
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+        
+        else:
+            # When no arguements are provided
+            bin_dir     = arg_list[1]
+            
+        # change any .s in the version to _s to because that's what the backend function expects
+        postgres_version = postgres_version.replace('.','_')
+
+        if bin_dir == '':
+            bin_dir = bin_dir_default
+
+        try:
+            self.db.register_backup_server_default_pg_bin_dir(postgres_version,
+                                                              bin_dir,
+                                                              description)
+                    
+            print '[DONE] Configured default binary directory for postgre ' + str(postgres_version) + '.\n'
+
+        except Exception as e:
+            self.processing_error('[ERROR]: Could not update the default backup server configuration \n' + str(e) + '\n')
+            
+
+    # #################################################
+    # Method do_update_backup_server_default_pg_bin_dir
+    # #################################################
+
+    def do_update_backup_server_default_pg_bin_dir(self,args):
+        '''
+        DESCRIPTION:
+        This command updates the default binary directory to use for a given
+        version of postgres.
+
+        COMMAND:
+        update_backup_server_default_pg_bin_dir [postgres_version]
+                                                [bin_dir]
+                                    
+        '''    
+
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print '--------------------------------------------------------'            
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Check argument count
+        #
+
+        if len(arg_list) > 0 and len(arg_list) != 2:
+            self.processing_error('\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n')
+
+        #
+        # Get the postgres version being edited
+        #
+        
+        postgres_version = ''
+        bin_dir          = None
+        bin_dir_default  = None
+        
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+
+            try:
+                print '--------------------------------------------------------'
+
+                while not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                    postgres_version = raw_input('# Postgres Version: ').strip()
+                    if not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                        print '"' + postgres_version + '" does not appear to be a valid postgres version'
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+            
+        else:
+            # When arguments are provided
+
+            postgres_version = arg_list[0]
+
+        #
+        # Fetch the current default
+        #
+
+        postgres_version = postgres_version.replace('.','_')
+        version_bin_dir_label = 'pgsql_bin_' + str(postgres_version)
+        bin_dir_default = '/usr/pgsql-' + str(postgres_version).replace('_','.') + '/bin'
+        
+        #
+        # Get the new binary path
+        #
+
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+            
+            ack = ''
+
+            try:
+                bin_dir = raw_input('# Postgres binary directory: [' + bin_dir_default + ']: ').strip()
+                print
+
+                while ack != 'yes' and ack != 'no':
+                    ack = raw_input('# Are all values to update correct (yes/no): ')
+
+                print '--------------------------------------------------------'
+                
+                if ack.lower() == 'no':
+                    print '[ABORTED] Command interrupted by the user.\n'
+                    return False
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+        
+        else:
+            # When no arguements are provided
+            bin_dir = arg_list[1]
+            
+        if bin_dir == '':
+            bin_dir = bin_dir_default
+
+        try:
+            self.db.update_backup_server_default_pg_bin_dir(postgres_version,
+                                                            bin_dir)
+                    
+            print '[DONE] Updated default binary directory for postgres version ' + str(postgres_version) + '.\n'
+
+        except Exception as e:
+            self.processing_error('[ERROR]: Could not update the default backup server configuration \n' + str(e) + '\n')
+
+    # #################################################
+    # Method do_delete_backup_server_default_pg_bin_dir
+    # #################################################
+
+    def do_delete_backup_server_default_pg_bin_dir(self,args):
+        '''
+        DESCRIPTION:
+        This command drops support for the given version of postgres from the
+        defaults
+
+        COMMAND:
+        update_backup_server_pg_bin_dir [postgres_version]
+                                    
+        '''    
+
+        try: 
+            arg_list = shlex.split(args)
+        
+        except ValueError as e:
+            print '--------------------------------------------------------'            
+            self.processing_error('[ERROR]: ' + str(e) + '\n')
+            return False
+
+        #
+        # Check argument count
+        #
+
+        if len(arg_list) > 0 and len(arg_list) != 1:
+            self.processing_error('\n[ERROR] - Wrong number of parameters used.\n          Type help or ? to list commands\n')
+
+        #
+        # Get the backup server and postgres version being edited
+        #
+        
+        postgres_version = ''
+        
+        if len(arg_list) == 0:
+            # When no arguements are provided...
+            
+            try:
+                ack = ''
+
+                print '--------------------------------------------------------'
+
+                while not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                    postgres_version = raw_input('# Postgres Version: ').strip()
+                    if not re.match( '\d{2,}|9[._][1-6]', postgres_version ):
+                        print '"' + postgres_version + '" does not appear to be a valid postgres version'
+
+                while ack != 'yes' and ack != 'no':
+                    ack = raw_input('# Are you sure you want to drop support for this version of postgres (yes/no): ')
+
+                print '--------------------------------------------------------'
+                
+                if ack.lower() == 'no':
+                    print '[ABORTED] Command interrupted by the user.\n'
+                    return False
+
+            except Exception as e:
+                print '\n--------------------------------------------------------' 
+                print '[ABORTED] Command interrupted by the user.\n'
+                return False
+            
+        else:
+            # When arguments are provided
+
+            postgres_version = arg_list[0]
+
+        postgres_version = postgres_version.replace('.','_')
+
+        try:
+            self.db.delete_backup_server_default_pg_bin_dir(postgres_version)
+                    
+            print '[DONE] Dropped postgres version ' + str(postgres_version) + ' support by default.\n'
+
+        except Exception as e:
+            self.processing_error('[ERROR]: Could not update the default backup server configuration \n' + str(e) + '\n')
 
 
     # ############################################

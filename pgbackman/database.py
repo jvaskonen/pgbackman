@@ -2436,7 +2436,12 @@ class PgbackmanDB():
     # Method
     # ############################################
 
-    def update_backup_server_config(self,backup_server_id,pgsql_bin_9_0,pgsql_bin_9_1,pgsql_bin_9_2,pgsql_bin_9_3,pgsql_bin_9_4,pgsql_bin_9_5,pgsql_bin_9_6,pgsql_bin_10,root_backup_partition):
+    def update_backup_server_config(self,
+                                    backup_server_id,
+                                    pgbackman_dump_command,
+                                    pgbackman_restore_command,
+                                    admin_user,domain,
+                                    root_backup_partition):
         """A function to update the configuration of a backup server"""
 
         try:
@@ -2444,16 +2449,12 @@ class PgbackmanDB():
 
             if self.cur:
                 try:
-                    self.cur.execute('SELECT update_backup_server_config(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',(backup_server_id,
-                                                                                                       pgsql_bin_9_0,
-                                                                                                       pgsql_bin_9_1,
-                                                                                                       pgsql_bin_9_2,
-                                                                                                       pgsql_bin_9_3,
-                                                                                                       pgsql_bin_9_4,
-                                                                                                       pgsql_bin_9_5,
-                                                                                                       pgsql_bin_9_6,
-                                                                                                       pgsql_bin_10,
-                                                                                                       root_backup_partition))
+                    self.cur.execute('SELECT update_backup_server_config(%s,%s,%s,%s,%s,%s)',(backup_server_id,
+                                                                                              pgbackman_dump_command,
+                                                                                              pgbackman_restore_command,
+                                                                                              admin_user,
+                                                                                              domain,
+                                                                                              root_backup_partition))
                     self.conn.commit()
 
                 except psycopg2.Error as e:
@@ -2464,6 +2465,149 @@ class PgbackmanDB():
         except psycopg2.Error as e:
             raise e
 
+    # ############################################
+    # Method
+    # ############################################
+
+    def register_backup_server_pg_bin_dir(self,backup_server_id,postgres_version,bin_dir,description):
+        """A function to update the binary path for a specific version of postgres on given backup server"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT register_backup_server_pg_bin_dir(%s,%s,%s,%s)',
+                                     (backup_server_id,postgres_version,bin_dir,description))
+                    self.conn.commit()
+
+                except psycopg2.Error as  e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
+
+    # ############################################
+    # Method
+    # ############################################
+
+    def update_backup_server_pg_bin_dir(self,backup_server_id,postgres_version,bin_dir):
+        """A function to update the binary path for a specific version of postgres on given backup server"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT update_backup_server_pg_bin_dir(%s,%s,%s)',
+                                     (backup_server_id,postgres_version,bin_dir))
+                    self.conn.commit()
+
+                except psycopg2.Error as  e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
+
+    # ############################################
+    # Method
+    # ############################################
+
+    def delete_backup_server_pg_bin_dir(self,backup_server_id,postgres_version):
+        """A function to drop support for a specific version of postgres on given backup server"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT delete_backup_server_pg_bin_dir(%s,%s)',
+                                     (backup_server_id,postgres_version))
+                    self.conn.commit()
+
+                except psycopg2.Error as  e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
+
+    # ############################################
+    # Method
+    # ############################################
+
+    def register_backup_server_default_pg_bin_dir(self,postgres_version,bin_dir,description):
+        """A function to update the default binary path for a specific version of postgres"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT register_backup_server_default_pg_bin_dir(%s,%s,%s)',
+                                     (postgres_version,bin_dir,description))
+                    self.conn.commit()
+
+                except psycopg2.Error as  e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
+
+    # ############################################
+    # Method
+    # ############################################
+
+    def update_backup_server_default_pg_bin_dir(self,postgres_version,bin_dir):
+        """A function to update the default binary path for a specific version of postgres"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT update_backup_server_default_pg_bin_dir(%s,%s)',
+                                     (postgres_version,bin_dir))
+                    self.conn.commit()
+
+                except psycopg2.Error as  e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
+
+    # ############################################
+    # Method
+    # ############################################
+
+    def delete_backup_server_default_pg_bin_dir(self,postgres_version):
+        """A function to drop support for a specific version of postgres by default"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT delete_backup_server_default_pg_bin_dir(%s)',
+                                     (postgres_version,))
+                    self.conn.commit()
+
+                except psycopg2.Error as  e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
 
     # ############################################
     # Method
@@ -2962,7 +3106,6 @@ class PgbackmanDB():
         except psycopg2.Error as e:
             raise e
 
-
     # ############################################
     # Method
     # ############################################
@@ -3275,8 +3418,8 @@ class PgbackmanDB():
     # Method
     # ############################################
 
-    def get_backup_server_configured_versions(self,backup_server_id):
-        """A function to get a list of all postgresql version that have been configured for a backup server"""
+    def show_backup_server_configured_versions(self,backup_server_id):
+        """A function to get a list of all postgresql versions that have been configured for a backup server"""
 
         try:
             self.pg_connect()
@@ -3284,6 +3427,31 @@ class PgbackmanDB():
             if self.cur:
                 try:
                     self.cur.execute('SELECT parameter FROM backup_server_config WHERE parameter ~ $$^pgsql_bin_$$ and server_id = %s',(backup_server_id,))
+                    self.conn.commit()
+
+                    return self.cur
+
+                except psycopg2.Error as e:
+                    raise e
+
+            self.pg_close()
+
+        except psycopg2.Error as e:
+            raise e
+
+    # ############################################
+    # Method
+    # ############################################
+
+    def show_backup_server_default_configured_versions(self):
+        """A function to get a list of all postgresql version that have been configured by default"""
+
+        try:
+            self.pg_connect()
+
+            if self.cur:
+                try:
+                    self.cur.execute('SELECT replace(replace(parameter,$$pgsql_bin_$$,$$$$),$$_$$,$$.$$), value FROM backup_server_default_config WHERE parameter ~ $$^pgsql_bin_$$')
                     self.conn.commit()
 
                     return self.cur
