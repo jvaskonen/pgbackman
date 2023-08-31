@@ -296,7 +296,7 @@ CREATE OR REPLACE FUNCTION update_backup_server_default_pg_bin_dir(TEXT,TEXT) RE
   END;
 $$;
 
-ALTER FUNCTION update_backup_server_default_pg_bin_dir(TEXT,TEXT,TEXT) OWNER TO pgbackman_role_rw;
+ALTER FUNCTION update_backup_server_default_pg_bin_dir(TEXT,TEXT) OWNER TO pgbackman_role_rw;
 
 -- Function delete_backup_server_pg_bin_dir
 -- Drop support for a given version of postgres from the specified backup server
