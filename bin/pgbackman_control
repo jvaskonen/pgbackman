@@ -501,7 +501,7 @@ def update_backup_server_cache_data(db,backup_server_fqdn,backup_server_id):
 
     try:
         root_backup_partition = db.get_backup_server_config_value(backup_server_id,'root_backup_partition')
-        configured_versions = db.get_backup_server_configured_versions(backup_server_id)
+        configured_versions = db.show_backup_server_configured_versions(backup_server_id)
         version_cache_text = '\n'.join(map(lambda ver: '%s::%s'%(ver,db.get_backup_server_config_value(backup_server_id, ver)),
                                            configured_versions))
         backup_server_cache_dir = root_backup_partition +  '/cache_dir'
