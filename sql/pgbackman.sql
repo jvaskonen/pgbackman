@@ -1,5 +1,5 @@
 --
--- PgBackMan database - Version 4:1_3_0
+-- PgBackMan database - Version 5:1_3_1
 --
 -- Copyright (c) 2013-2017 Rafael Martinez Guerrero / PostgreSQL-es
 -- rafael@postgresql.org.es / http://www.postgresql.org.es/
