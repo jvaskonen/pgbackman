@@ -1188,7 +1188,7 @@ CREATE OR REPLACE FUNCTION register_backup_server_pg_bin_dir(INTEGER,TEXT,TEXT,T
    IF server_cnt != 0 THEN
 
      EXECUTE 'INSERT INTO backup_server_config (server_id,parameter,value,description)
-              VALUES ( $1, ''pgsql_bin_'' || $3, $4)'
+              VALUES ( $1, ''pgsql_bin_'' || $2, $3, $4)'
      USING backup_server_id_,
            bin_dir_,
            postgres_version_,
