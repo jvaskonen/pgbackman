@@ -82,13 +82,13 @@ Las características principales de PgBackMan son:
 * Definiciones automáticas de copias de seguridad de todas las bases de datos sin definiciones en un servidor PostgreSQL.
 * Borrado automático despues de un período de cuarentena de las definiciones de backup de bases de datos que han sido borradas en un nodo PgSQL.
 * Restauración automática de backups.
-* Posibilidad det pausar/reanudar el proceso de replicación en nodos esclavos/standby cuando se estén realizando copias de seguridad grandes.  
+* Posibilidad det pausar/reanudar el proceso de replicación en nodos esclavos/standby cuando se estén realizando copias de seguridad grandes.
 * Programa pgbackman_dump autónomo que funciona incluso si la base de datos central con información de metadatos no está disponible.
 * Posibilidad de mandar alertas via SMTP cuando ocurre un error.
-* Posibilidad de mover en lote definiciones de backups entre servidores de backups. 
+* Posibilidad de mover en lote definiciones de backups entre servidores de backups.
 * Manejo de situaciones de error.
 * Programado en Python y PL/pgSQL.
-* Distribuido bajo la GNU General Public License 3. 
+* Distribuido bajo la GNU General Public License 3.
 
 
 Arquitectura y componentes
@@ -167,10 +167,10 @@ Requerimientos del sistema
 * Linux/Unix
 * Python 2.6 or 2.7
 * Módulos Python:
-  
+
   * psycopg2 >= 2.4.0
   * argparse >= 1.2.1
-    
+
 * PostgreSQL >= 9.2 para la base de datos ``pgbackman``
 * PostgreSQL >= 9.0 y <= 10 en todos los servidores PgSQL que vayan a
   utilizar PgBackMan para administrar sus copias de seguridad lógicas.
@@ -313,7 +313,7 @@ El procedimiento recomendado de actualización a una nueva versión
 seria el siguiente:
 
 #. Asegurarse que ninguna copia de seguridad sea ejecutada durante la
-   actualización. 
+   actualización.
 
    Recomendamos tener, por ejemplo, una ventana de mantenimiento de 30
    minutos al dia, a la semana o al mes en donde no existan
@@ -327,14 +327,14 @@ seria el siguiente:
 
      [root@pg-backup01]# /etc/init.d/pgbackman stop
      [root@pg-backup01]# /etc/init.d/crond stop
-     [root@pg-backup01]# /etc/init.d/atd stop    
+     [root@pg-backup01]# /etc/init.d/atd stop
 
    Esto habra que realizarlo en todos los servidores de backup que
    tengan PgBackMan instalado.
 
 #. Comprobar que no estais ejecutando ninguna copia de seguridad o
    restauración de datos::
-     
+
       [root@pg-backup01]# ps ax | egrep "pgbackman_dump|pgbackman_restore"
 
    Si estais ejecutando procesos PgBackMan de copias o restauración
@@ -357,24 +357,24 @@ seria el siguiente:
      #################
      A T T E N T I O N
      #################
-     
+
      The PgBackMan software version [2:v_1_1_0] is different from
      the PgBackMan database version [1:v_1_0_0].
-     
+
      # Do you want to upgrade the PgBackMan database to version: [2:v_1_1_0] (yes/no): yes
-     
+
      ############################
      Upgrading PgBackMan database
      ############################
-     
+
      [OK]: File: /usr/share/pgbackman/pgbackman_2.sql exists.
      [OK]: File /usr/share/pgbackman/pgbackman_2.sql installed.
-     
+
      ####################################################################
      Welcome to the PostgreSQL Backup Manager shell ver.1.1.0
      ####################################################################
      Type help or \? to list commands.
-     
+
      [pgbackman]$ show_pgbackman_config
      +----------------------------+----------------------------------+
      |          Software version: | [2]:1_1_0                        |
@@ -422,7 +422,7 @@ Servidores de backups
 
 Un servidor de backups necesita tener acceso a la base de datos
 ``pgbackman`` y a todos los nodos PgSQL en los cuales tenga que
-realizar copias de seguridad o restauración de datos. 
+realizar copias de seguridad o restauración de datos.
 
 A continuación teneis los pasos a seguir para configurar un servidor
 de backups en PgBackMan:
@@ -442,7 +442,7 @@ de backups en PgBackMan:
 
    No olvidar definir los privilegios de este archivo con ``chmod 400
    ~/.pgpass``.
- 
+
    Una solución aun mejor seria el uso de la autentificación de tipo
    ``cert`` para el usuario usado para acceder la base datos
    ``pgbackman``. De esta manera evitariamos el tener que grabar los
@@ -453,7 +453,7 @@ de backups en PgBackMan:
    usar una conexión SSL para cifrar el trafico entre el servidor de
    backup y la base de datos.::
 
-     hostssl   pgbackman   pgbackman_role_rw    <backup_server_IP>/32     md5 
+     hostssl   pgbackman   pgbackman_role_rw    <backup_server_IP>/32     md5
 
 #. Instalar los clientes PostgreSQL para todas la versiones de
    PostgreSQL que querais soportar en el servidor de backups.
@@ -474,8 +474,8 @@ de backups en PgBackMan:
 
      [pgbackman]$ register_backup_server
      --------------------------------------------------------
-     # Hostname []: pg-backup01 
-     # Domain [uio.no]: 
+     # Hostname []: pg-backup01
+     # Domain [uio.no]:
      # Remarks []: Main backup server
 
      # Are all values correct (yes/no): yes
@@ -494,49 +494,54 @@ de backups en PgBackMan:
    backup están definidos con los valores correctos. Por ejemplo,
    tendreis que actualizar los valores de los directorios con los
    programas clientes de PostgreSQL si usais Debian::
-
-     [pgbackman]$ update_backup_server_config
+     [pgbackman]$ update_backup_server_pg_bin_dir
      --------------------------------------------------------
      # SrvID / FQDN []: 1
-
-     # PgSQL bindir 9.0 [/usr/pgsql-9.0/bin]: /usr/lib/postgresql/9.0/bin
-     # PgSQL bindir 9.1 [/usr/pgsql-9.1/bin]: /usr/lib/postgresql/9.1/bin
-     # PgSQL bindir 9.2 [/usr/pgsql-9.2/bin]: /usr/lib/postgresql/9.2/bin
-     # PgSQL bindir 9.3 [/usr/pgsql-9.3/bin]: /usr/lib/postgresql/9.3/bin
-     # PgSQL bindir 9.4 [/usr/pgsql-9.4/bin]: /usr/lib/postgresql/9.4/bin
-     # PgSQL bindir 9.5 [/usr/pgsql-9.5/bin]: /usr/lib/postgresql/9.5/bin
-     # PgSQL bindir 9.6 [/usr/pgsql-9.6/bin]: /usr/lib/postgresql/9.6/bin
-     # PgSQL bindir 10 [/usr/pgsql-10/bin]: /usr/lib/postgresql/10/bin
-     # Main backup dir [/srv/pgbackman]: 
+     # Postgres Version: 15
+     # Postgres binary directory: [/usr/pgsql-14/bin]: /usr/lib/postgresql/15/bin
 
      # Are all values to update correct (yes/no): yes
      --------------------------------------------------------
-     
-     [Done] Configuration parameters for SrvID: 1 updated.
+     [DONE] Binary directory for postgres 15 for SrvID: 1 updated.
 
+     .
+     .
+     .
      [pgbackman]$ show_backup_server_config
      --------------------------------------------------------
-     # SrvID / FQDN: 1
+     # SrvID / FQDN [backup1.example.org]: 1
      --------------------------------------------------------
-     +-----------------------+-----------------------------+---------------------------------------------+
-     | Parameter             | Value                       | Description                                 |
-     +-----------------------+-----------------------------+---------------------------------------------+
-     | admin_user            | postgres                    | postgreSQL admin user                       |
-     | backup_server_status  | RUNNING                     | Default backup server status - *Not used*   |
-     | domain                | example.net                 | Default domain                              |
-     | pgbackman_dump        | /usr/bin/pgbackman_dump     | Program used to take backup dumps           |
-     | pgbackman_restore     | /usr/bin/pgbackman_restore  | Program used to restore backup dumps        |
-     | pgsql_bin_9_0         | /usr/lib/postgresql/9.0/bin | postgreSQL 9.0 bin directory                |
-     | pgsql_bin_9_1         | /usr/lib/postgresql/9.1/bin | postgreSQL 9.1 bin directory                |
-     | pgsql_bin_9_2         | /usr/lib/postgresql/9.2/bin | postgreSQL 9.2 bin directory                |
-     | pgsql_bin_9_3         | /usr/lib/postgresql/9.3/bin | postgreSQL 9.3 bin directory                |
-     | pgsql_bin_9_4         | /usr/lib/postgresql/9.4/bin | postgreSQL 9.4 bin directory                |
-     | pgsql_bin_9_5         | /usr/lib/postgresql/9.5/bin | postgreSQL 9.5 bin directory                |
-     | pgsql_bin_9_6         | /usr/lib/postgresql/9.6/bin | postgreSQL 9.6 bin directory                |
-     | pgsql_bin_10          | /usr/lib/postgresql/10/bin  | postgreSQL 10 bin directory                 |
-     | root_backup_partition | /srv/pgbackman              | Main partition used by pgbackman            |
-     | root_cron_file        | /etc/cron.d/pgbackman       | Crontab file used by pgbackman - *Not used* |
-     +-----------------------+-----------------------------+---------------------------------------------+
+     +-----------------------+----------------------------+---------------------------------------------+
+     | Parameter             | Value                      | Description                                 |
+     +-----------------------+----------------------------+---------------------------------------------+
+     | admin_user            | postgres                   | postgreSQL admin user                       |
+     | backup_server_status  | RUNNING                    | Default backup server status - *Not used*   |
+     | domain                | example.org                | Default domain                              |
+     | pgbackman_dump        | /usr/bin/pgbackman_dump    | Program used to take backup dumps           |
+     | pgbackman_restore     | /usr/bin/pgbackman_restore | Program used to restore backup dumps        |
+     | pgsql_bin_10          | /usr/lib/postgresql/10/bin | postgreSQL 10 bin directory                 |
+     | pgsql_bin_11          | /usr/lib/postgresql/11/bin | postgreSQL 11 bin directory                 |
+     | pgsql_bin_12          | /usr/lib/postgresql/12/bin | postgreSQL 12 bin directory                 |
+     | pgsql_bin_13          | /usr/lib/postgresql/13/bin | postgreSQL 13 bin directory                 |
+     | pgsql_bin_14          | /usr/lib/postgresql/14/bin | postgreSQL 14 bin directory                 |
+     | pgsql_bin_15          | /usr/lib/postgresql/15/bin | postgreSQL 14 bin directory                 |
+     | pgsql_bin_16          | /usr/pgsql-15/bin          | postgreSQL 15 bin directory                 |
+     | root_backup_partition | /srv/pgbackman             | Main partition used by pgbackman            |
+     | root_cron_file        | /etc/cron.d/pgbackman      | Crontab file used by pgbackman - *Not used* |
+     +-----------------------+----------------------------+---------------------------------------------+
+
+     Si no existe un directorio binario para la versión de postgres que
+     está utilizando, puede agregarlo con::
+
+       [pgbackman]$ register_backup_server_pg_bin_dir
+       --------------------------------------------------------
+       # SrvID / FQDN [backup1.example.org]: 1
+       # Postgres Version: 17
+       # Postgres binary directory: [/usr/pgsql-17/bin]:
+
+       # Are all values to update correct (yes/no): yes
+       --------------------------------------------------------
+       [DONE] Configured postgres 17 for SrvID: 1.
 
 #. Crear el directorio o partición en el servidor de backups que será
    usada para grabar todas las copias de seguridad, archivos de
@@ -557,7 +562,7 @@ recargar sus archivos ``pg_hba.conf`` para dar acceso al usuario
 administrador (``postgres`` por defecto) desde todos los servidores de
 backup definidos en PgBackMan::
 
-    hostssl   *   postgres    <backup_server_IP>/32     md5 
+    hostssl   *   postgres    <backup_server_IP>/32     md5
 
 No olvidar que el archivo ``.pgpass`` del usuario ``pgbackman`` en los
 servidores de backups debe de actualizarse también con la información
@@ -638,7 +643,7 @@ de la base de datos central cuando:
 * Una copia de seguridad de tipo snapshot ha sido definida.
 * Un trabajo de restauración de datos ha sido definido.
 * Una copia de seguridad programada nueva ha sido definida.
-* Una copia de seguridad programada ha sido borrada. 
+* Una copia de seguridad programada ha sido borrada.
 * Una copia de seguridad programada ha sido actualizada.
 
 Las acciones que este programa puede ejecutar son:
@@ -752,37 +757,37 @@ programa ``/usr/bin/pgbackman``
    Welcome to the PostgreSQL Backup Manager shell ver.1.2.0
    ####################################################################
    Type help or \? to list commands.
-   
+
    [pgbackman]$ help
-   
+
    Documented commands (type help <topic>):
    ========================================
    EOF                              show_databases_without_backup_definitions
-   clear                            show_empty_backup_catalogs               
-   delete_backup_definition_dbname  show_history                             
-   delete_backup_definition_id      show_jobs_queue                          
-   delete_backup_server             show_pgbackman_config                    
-   delete_pgsql_node                show_pgbackman_stats                     
-   move_backup_definition           show_pgsql_node_config                   
-   quit                             show_pgsql_node_stats                    
-   register_backup_definition       show_pgsql_nodes                         
-   register_backup_server           show_restore_catalog                     
-   register_pgsql_node              show_restore_definitions                 
-   register_restore_definition      show_restore_details                     
-   register_snapshot_definition     show_restores_in_progress                
-   set                              show_snapshot_definitions                
-   shell                            show_snapshots_in_progress               
-   show_backup_catalog              update_backup_definition                 
-   show_backup_definitions          update_backup_server                     
-   show_backup_details              update_backup_server_config              
-   show_backup_server_config        update_pgsql_node                        
-   show_backup_server_stats         update_pgsql_node_config                 
-   show_backup_servers            
+   clear                            show_empty_backup_catalogs
+   delete_backup_definition_dbname  show_history
+   delete_backup_definition_id      show_jobs_queue
+   delete_backup_server             show_pgbackman_config
+   delete_pgsql_node                show_pgbackman_stats
+   move_backup_definition           show_pgsql_node_config
+   quit                             show_pgsql_node_stats
+   register_backup_definition       show_pgsql_nodes
+   register_backup_server           show_restore_catalog
+   register_pgsql_node              show_restore_definitions
+   register_restore_definition      show_restore_details
+   register_snapshot_definition     show_restores_in_progress
+   set                              show_snapshot_definitions
+   shell                            show_snapshots_in_progress
+   show_backup_catalog              update_backup_definition
+   show_backup_definitions          update_backup_server
+   show_backup_details              update_backup_server_config
+   show_backup_server_config        update_pgsql_node
+   show_backup_server_stats         update_pgsql_node_config
+   show_backup_servers
 
    Miscellaneous help topics:
    ==========================
    shortcuts  support
-   
+
    Undocumented commands:
    ======================
    help
@@ -823,10 +828,10 @@ CSV.::
    {
      "backup_servers": [
        {
-          "srvid": "00001", 
-          "fqdn": "pg-backup01.example.net", 
+          "srvid": "00001",
+          "fqdn": "pg-backup01.example.net",
           "remarks": "testing"
-       } 
+       }
      ]
    }
 
@@ -850,21 +855,21 @@ Este comando puede ser ejecutado solamente sin parámetros, e.g.:
    Welcome to the PostgreSQL Backup Manager shell ver.1.2.0
    ####################################################################
    Type help or \? to list commands.
-   
-   [pgbackman]$ 
+
+   [pgbackman]$
 
 
-delete_backup_definition_dbname 
+delete_backup_definition_dbname
 --------------------------------
 
-**NOTA: Usar este comando con precaución** 
+**NOTA: Usar este comando con precaución**
 
 Este comando borra todas las definiciones de copias de seguridad
 programadas de una base de datos.::
 
-  delete_backup_definition_dbname [NodeID/FQDN] 
-                                  [DBname] 
-				  [force-deletion]
+  delete_backup_definition_dbname [NodeID/FQDN]
+                                  [DBname]
+                                  [force-deletion]
 
 Parámetros:
 
@@ -896,10 +901,10 @@ Este comando puede ejecutarse con o sin parámetros.
    # NodeID / FQDN: 1
    # DBname: testdb
    # Force deletion (y/n): y
-   
+
    # Are you sure you want to delete this backup definition? (yes/no): yes
    --------------------------------------------------------
-   
+
    [Done] Backup definition for DBname: testdb deleted with force.
 
 ::
@@ -909,10 +914,10 @@ Este comando puede ejecutarse con o sin parámetros.
    # NodeID / FQDN: pg-node01.example.net
    # DBname: testdb
    # Force deletion (y/n): n
-   
+
    # Are you sure you want to delete this backup definition? (yes/no): yes
    --------------------------------------------------------
-   
+
    [ERROR]: Could not delete this backup job definition
    ----------------------------------------------
    EXCEPTION:
@@ -925,7 +930,7 @@ Este comando puede ejecutarse con o sin parámetros.
    ----------------------------------------------
 
 
-delete_backup_definition_id 
+delete_backup_definition_id
 ---------------------------
 
 **NOTA: Usar este comando con precaución**
@@ -933,7 +938,7 @@ delete_backup_definition_id
 Este comando borra una definición de copia de seguridad con una
 identificación DefID::
 
-  delete_backup_definition_id [DefID] 
+  delete_backup_definition_id [DefID]
                               [force-deletion]
 
 Parámetros:
@@ -963,10 +968,10 @@ Este comando puede ejecutarse con o sin parámetros.
    --------------------------------------------------------
    # DefID: 1
    # Force deletion (y/n): y
-   
+
    # Are you sure you want to delete this backup definition? (yes/no): yes
    --------------------------------------------------------
-   
+
    [Done] Backup definition for DefID: 1 deleted with force.
 
 ::
@@ -975,10 +980,10 @@ Este comando puede ejecutarse con o sin parámetros.
    --------------------------------------------------------
    # DefID: 1
    # Force deletion (y/n): n
-   
+
    # Are you sure you want to delete this backup definition? (yes/no): yes
    --------------------------------------------------------
-   
+
    [ERROR]: Could not delete this backup job definition
    ----------------------------------------------
    EXCEPTION:
@@ -1027,7 +1032,7 @@ Este comando se puede ejecutar con o sin parámetros::
   [pgbackman]$ delete_backup_server
   --------------------------------------------------------
   # SrvID / FQDN: 2
-  
+
   # Are you sure you want to delete this server? (yes/no): yes
   --------------------------------------------------------
 
@@ -1038,7 +1043,7 @@ Este comando se puede ejecutar con o sin parámetros::
    [pgbackman]$ delete_backup_server
    --------------------------------------------------------
    # SrvID / FQDN: 2
-   
+
    # Are you sure you want to delete this server? (yes/no): yes
    --------------------------------------------------------
 
@@ -1048,11 +1053,74 @@ Este comando se puede ejecutar con o sin parámetros::
    ----------------------------------------------
    MESSAGE: update or delete on table "backup_server" violates foreign
    key constraint "backup_definition_backup_server_id_fkey" on table
-   "backup_definition" 
+   "backup_definition"
    DETAIL : Key (server_id)=(2) is still referenced from table
    "backup_definition".
    ----------------------------------------------
 
+delete_backup_server_default_pg_bin_dir
+---------------------------------------
+
+Este comando elimina una versión de postgres del conjunto de versiones
+configuradas por defecto cuando se registra un nuevo servidor de backup.
+
+::
+
+   delete_backup_server_default_pg_bin_dir [postgres version]
+
+Parámetros:
+
+* **[postgres version]:** La versión de Postgres que ya no se configura
+  al agregar nuevos servidores.
+
+Este comando se puede ejecutar con o sin parámetros:
+
+::
+
+   [pgbackman]$ delete_backup_server_default_pg_bin_dir 11
+   [DONE] Dropped postgres version 11 support by default.
+
+::
+
+   [pgbackman]$ delete_backup_server_default_pg_bin_dir
+   --------------------------------------------------------
+   # Postgres Version: 12
+   # Are you sure you want to drop support for this version of postgres (yes/no): yes
+   --------------------------------------------------------
+   [DONE] Dropped postgres version 12 support by default.
+
+delete_backup_server_pg_bin_dir
+-------------------------------
+
+Este comando elimina la compatibilidad con una versión de postgres en un
+servidor de backup.
+
+::
+
+   delete_backup_server_pg_bin_dir [SrvID | FQDN] [postgres version]
+
+Parameters:
+
+* **[SrvID | FQDN]:** SrvID en PgBackMan o FQDN del servidor de backup.
+* **[postgres version]:** La versión de postgres que ya no es compatible.
+
+Este comando se puede ejecutar con o sin parámetros::
+
+
+::
+
+   [pgbackman]$ delete_backup_server_pg_bin_dir 1 12
+   [DONE] Dropped postgres 12 for SrvID: 1.
+
+::
+
+   [pgbackman]$ delete_backup_server_pg_bin_dir
+   --------------------------------------------------------
+   # SrvID / FQDN [backup1.example.org]: 1
+   # Postgres Version: 14
+   # Are you sure you want to drop support for this version of postgres (yes/no): yes
+   --------------------------------------------------------
+   [DONE] Dropped postgres 14 for SrvID: 1.
 
 delete_pgsql_node
 -----------------
@@ -1081,17 +1149,6 @@ Este comando se puede ejecutar con o sin parámetros::
 ::
 
    [pgbackman]$ delete_pgsql_node 4
-   
-   [Done] PgSQL node deleted.
-
-::
-
-   [pgbackman]$ delete_pgsql_node
-   --------------------------------------------------------
-   # NodeID / FQDN: 4
-   
-   # Are you sure you want to delete this server? (yes/no): 
-   --------------------------------------------------------
 
    [Done] PgSQL node deleted.
 
@@ -1100,7 +1157,18 @@ Este comando se puede ejecutar con o sin parámetros::
    [pgbackman]$ delete_pgsql_node
    --------------------------------------------------------
    # NodeID / FQDN: 4
-   
+
+   # Are you sure you want to delete this server? (yes/no):
+   --------------------------------------------------------
+
+   [Done] PgSQL node deleted.
+
+::
+
+   [pgbackman]$ delete_pgsql_node
+   --------------------------------------------------------
+   # NodeID / FQDN: 4
+
    # Are you sure you want to delete this server? (yes/no): yes
    --------------------------------------------------------
 
@@ -1113,10 +1181,10 @@ Este comando se puede ejecutar con o sin parámetros::
    constraint "backup_definition_pgsql_node_id_fkey" on table
    "backup_definition"
    DETAIL : Key (node_id)=(4) is still referenced from table
-   "backup_definition".  
+   "backup_definition".
    --------------------------------------------
 
-move_backup_definition 
+move_backup_definition
 ----------------------
 
 Este comando mueve definiciones de copias de seguridad entre
@@ -1127,9 +1195,9 @@ valores.
 
    move_backup_definition [From SrvID|FQDN]
                           [To SrvID|FQDN]
-                          [NodeID|FQDN] 
-                          [DBname] 
-                          [DefID] 
+                          [NodeID|FQDN]
+                          [DBname]
+                          [DefID]
 
 Parámetros:
 
@@ -1143,12 +1211,12 @@ Parámetros:
   se ejecutan los backups que queremos mover.
 
   Con este comando se pueden utilizar los valores 'all' o '*'.
-                                   
+
 * **[Dbname]**: Nombre de la base de datos en los trabajos de backup
   que queremos mover.
 
   Con este comando se pueden utilizar los valores 'all' o '*'.
-                    
+
 * **[DefID]: ID de la definicion de backup que queremos mover.
 
 Los valores por defecto de un parámetro se enseñan entre
@@ -1160,18 +1228,18 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
 ::
 
    [pgbackman]$ move_backup_definition pg-backup01.example.net pg-backup02.example.net * * ''
-   
+
    [DONE] Moving backup definitions from backup server [pg-backup01.example.net] to backup server [pg-backup02.example.net]
 
 ::
 
    [pgbackman]$ move_backup_definition
    --------------------------------------------------------
-   # From backup server SrvID / FQDN [pg-backup01.example.net]: 
-   # To Backup server SrvID / FQDN [pg-backup0.example.net]: 
-   # PgSQL node NodeID / FQDN [all]: 
-   # DBname [all]: 
-   # DefID []: 
+   # From backup server SrvID / FQDN [pg-backup01.example.net]:
+   # To Backup server SrvID / FQDN [pg-backup0.example.net]:
+   # PgSQL node NodeID / FQDN [all]:
+   # DBname [all]:
+   # DefID []:
    # Are all values correct (yes/no): yes
    --------------------------------------------------------
    [DONE] Moving backup definitions from backup server [pg-backup01.example.net] to backup server [pg-backup02.example.net]
@@ -1200,26 +1268,26 @@ Este comando se puede ejecutar solamente sin parámetros, e.g.:
    Done, thank you for using PgBackMan
 
 
-register_backup_definition 
+register_backup_definition
 ---------------------------
 
 Este comando registra un definición de copia de seguridad programada::
 
-  register_backup_definition [SrvID | FQDN] 
-                             [NodeID | FQDN] 
-                             [DBname] 
-			     [DBname exceptions]
-                             [min_cron] 
-			     [hour_cron] 
-			     [daymonth_cron]
-			     [month_cron] 
-			     [weekday_cron] 
-                             [backup code] 
-                             [encryption] 
-                             [retention period] 
-                             [retention redundancy] 
-                             [extra backup parameters] 
-                             [job status] 
+  register_backup_definition [SrvID | FQDN]
+                             [NodeID | FQDN]
+                             [DBname]
+                             [DBname exceptions]
+                             [min_cron]
+                             [hour_cron]
+                             [daymonth_cron]
+                             [month_cron]
+                             [weekday_cron]
+                             [backup code]
+                             [encryption]
+                             [retention period]
+                             [retention redundancy]
+                             [extra backup parameters]
+                             [job status]
                              [remarks]
 
 Parámetros:
@@ -1241,7 +1309,7 @@ Parámetros:
   * ``#all_databases#``: si se quiere definir una definición de copia
     de seguridad para *todas las bases de datos existentes* en el nodo
     PgSQL (excepto 'template0', 'template1' y 'postgres')
- 
+
   * ``#databases_without_backups#``: si se quiere definir una
     definición de copia de seguridad para las bases de datos
     existentes en el nodo PgSQL *sin una definicion de copia de
@@ -1254,7 +1322,7 @@ Parámetros:
 * **[\*_cron]:** Definición del momento de ejecución de la copia de
   seguridad usando una expresión cron.
 
-* **[backup code]:** 
+* **[backup code]:**
 
   * CLUSTER: copia de seguridad de todas las bases de datos en el nodo
     PgSQL usando ``pg_dumpall``. La copia de seguridad se comprime con
@@ -1287,13 +1355,13 @@ Parámetros:
   con pg_dump / pg_dumpall.
 
 * **[job status]**
-        
+
   * ACTIVE: copia de seguridad activada y en producción.
   * STOPPED: copia de seguridad detenida.
 
 Los valores por defecto de un parámetro se enseñan entre
 corchetes``[]``. Si el usuario no define ningún valor, PgBackMan
-utilizará el valor por defecto. 
+utilizará el valor por defecto.
 
 Este comando se puede ejecutar con o sin parámetros:
 
@@ -1311,22 +1379,22 @@ Este comando se puede ejecutar con o sin parámetros:
    # PgSQL node NodeID / FQDN []: pg-node01.example.net
    # DBname []: test02
    # DBname exceptions []:
-   # Minutes cron [41]: 
-   # Hours cron [01]: 
-   # Day-month cron [*]: 
-   # Month cron [*]: 
-   # Weekday cron [*]: 
-   # Backup code [FULL]: 
-   # Encryption [false]: 
-   # Retention period [7 days]: 
-   # Retention redundancy [1]: 
-   # Extra parameters []: 
-   # Job status [ACTIVE]: 
+   # Minutes cron [41]:
+   # Hours cron [01]:
+   # Day-month cron [*]:
+   # Month cron [*]:
+   # Weekday cron [*]:
+   # Backup code [FULL]:
+   # Encryption [false]:
+   # Retention period [7 days]:
+   # Retention redundancy [1]:
+   # Extra parameters []:
+   # Job status [ACTIVE]:
    # Remarks []: Testing reg.
-   
+
    # Are all values correct (yes/no): yes
    --------------------------------------------------------
-   
+
    [Done] Backup definition for dbname: test02 registered.
 
 
@@ -1335,9 +1403,9 @@ register_backup_server
 
 Este comando registra un servidor de backup en PgBackMan::
 
-  Command: register_backup_server [hostname] 
-                                  [domain] 
-				  [remarks]
+  Command: register_backup_server [hostname]
+                                  [domain]
+                                  [remarks]
 
 Parámetros:
 
@@ -1347,12 +1415,12 @@ Parámetros:
 
 Los valores por defecto de un parámetro se enseñan entre
 corchetes``[]``. Si el usuario no define ningún valor, PgBackMan
-utilizará el valor por defecto. 
+utilizará el valor por defecto.
 
 Este comando se puede ejecutar con o sin parámetros: ::
 
     [pgbackman]$ register_backup_server backup01 "" "Test server"
-   
+
     [Done] Backup server backup01.example.org registered.
 
 ::
@@ -1360,26 +1428,100 @@ Este comando se puede ejecutar con o sin parámetros: ::
     [pgbackman]$ register_backup_server
     --------------------------------------------------------
     # Hostname []: backup01
-    # Domain [example.org]: 
+    # Domain [example.org]:
     # Remarks []: Test server
-   
+
     # Are all values correct (yes/no): yes
     --------------------------------------------------------
-    
+
     [Done] Backup server backup01.example.org registered.
-  
+
+
+register_backup_server_default_pg_bin_dir
+-----------------------------------------
+
+Este comando se usa para agregar un directorio binario por defecto
+para usar con una versión de postgres al agregar un nuevo servidor de
+backup. Todos los servidores de backup existentes también se
+actualizarán con el nuevo valor por defecto.
+
+::
+
+   register_backup_server_default_pg_bin_dir [postgres version]
+                                             [binary directory]
+
+Parámetros:
+
+* **[postgres version]:** La versión de postgres para configurar.
+* **[binary directory]:** El directorio binario por defecto para
+  esta versión de postgres.
+
+Este comando se puede ejecutar con o sin parámetros:
+
+::
+
+   [pgbackman]$ register_backup_server_default_pg_bin_dir 12 /usr/pgsql-12/bin
+   [DONE] Configured default binary directory for postgre 12.
+
+::
+
+   [pgbackman]$ register_backup_server_default_pg_bin_dir
+   --------------------------------------------------------
+   # Postgres Version: 11
+   # Postgres binary directory: [/usr/pgsql-11/bin]:
+
+   # Are all values to update correct (yes/no): yes
+   --------------------------------------------------------
+   [DONE] Configured default binary directory for postgre 11.
+
+register_backup_server_pg_bin_dir
+---------------------------------
+
+Este comando configura el directorio binario que se utilizará para una
+versión específica de postgres en un servidor de backup.
+
+::
+   register_backup_server_pg_bin_dir [SrvID | FQDN]
+                                     [postgres version]
+                                     [binary directory]
+
+Parámetros:
+
+* **[SrvID | FQDN]:** La identificación de pgbackman del servidor de backup
+  que se está configurando o su nombre de dominio completo.
+* **[postgres version]:** La versión de postgres que se está configurando.
+* **[binary directory]:** El directorio donde están instalados los binarios
+  para esta versión de postgres.
+
+Este comando se puede ejecutar con o sin parámetros:
+
+::
+   [pgbackman]$ register_backup_server_pg_bin_dir 1 18 /usr/pgsql-18/bin
+   [DONE] Configured postgres 18 for SrvID: 1.
+
+::
+
+   [pgbackman]$ register_backup_server_pg_bin_dir
+   --------------------------------------------------------
+   # SrvID / FQDN [backup1.example.org]: 1
+   # Postgres Version: 18
+   # Postgres binary directory: [/usr/pgsql-18/bin]:
+
+   # Are all values to update correct (yes/no): yes
+   --------------------------------------------------------
+   [DONE] Configured postgres 18 for SrvID: 1.
 
 register_pgsql_node
 -------------------
 
 este comando registra un nodo PgSQL en PgBackMan.::
 
-  register_pgsql_node [hostname] 
-                      [domain] 
-		      [pgport] 
-		      [admin_user] 
-		      [status] 
-		      [remarks]
+  register_pgsql_node [hostname]
+                      [domain]
+                      [pgport]
+                      [admin_user]
+                      [status]
+                      [remarks]
 
 Parámetros:
 
@@ -1388,8 +1530,8 @@ Parámetros:
 * **[pgport]:** Puerto usado por PostgreSQL.
 * **[admin_user]:** Usuario administrador de PostgreSQL.
 * **[status]:**
-  
-  * RUNNING: El nodo PgSQL esta activo y en producción. 
+
+  * RUNNING: El nodo PgSQL esta activo y en producción.
   * DOWN: El nodo PgSQL no se encuentra activado.
 
 * **[remarks]:** Comentarios.
@@ -1400,7 +1542,7 @@ estatus del nodo PgSQL es cambiado a RUNNING/DOWN.
 
 Los valores por defecto de un parámetro se enseñan entre
 corchetes``[]``. Si el usuario no define ningún valor, PgBackMan
-utilizará el valor por defecto. 
+utilizará el valor por defecto.
 
 Este comando se puede ejecutar con o sin parámetros:
 
@@ -1415,12 +1557,12 @@ Este comando se puede ejecutar con o sin parámetros:
    [pgbackman]$ register_pgsql_node
    --------------------------------------------------------
    # Hostname []: pg-node01
-   # Domain [example.org]: 
-   # Port [5432]: 
-   # Admin user [postgres]: 
+   # Domain [example.org]:
+   # Port [5432]:
+   # Admin user [postgres]:
    # Status[STOPPED]: running
    # Remarks []: Test node
-   
+
    # Are all values correct (yes/no): yes
    --------------------------------------------------------
 
@@ -1449,29 +1591,29 @@ Parámetros:
 * **[Extra parameters]:** Parámetros extras que pueden usarse con
   pg_restore
 
-Este comando se puede ejecutar solamente sin parámetros.e.g.: 
+Este comando se puede ejecutar solamente sin parámetros.e.g.:
 
 ::
 
    [pgbackman]$ register_restore_definition
    --------------------------------------------------------
-   # AT timestamp [2014-05-30 09:44:04.503880]: 
+   # AT timestamp [2014-05-30 09:44:04.503880]:
    # BckID []: 35
    # Target NodeID / FQDN []: 2
-   # Target DBname [pgbackman]: 
-   # Extra parameters []: 
-   
+   # Target DBname [pgbackman]:
+   # Extra parameters []:
+
    # Are all values correct (yes/no): yes
    --------------------------------------------------------
    [Processing restore data]
    --------------------------------------------------------
    [OK]: Target DBname pgbackman does not exist on target PgSQL node.
-   
+
    [OK]: Role 'pgbackman_role_rw' does not exist on target PgSQL node.
-   
+
    [WARNING]: Role 'postgres' already exists on target PgSQL node.
    # Use the existing role? (yes/no): yes
-   
+
    --------------------------------------------------------
    [Restore definition accepted]
    --------------------------------------------------------
@@ -1481,7 +1623,7 @@ Este comando se puede ejecutar solamente sin parámetros.e.g.:
    Backup server: [1] pg-backup01.example.net
    Target PgSQL node: [2] pg-node01.example.net
    Target DBname: pgbackman
-   Extra restore parameters: 
+   Extra restore parameters:
    Existing database will be renamed to : None
    --------------------------------------------------------
    # Are all values correct (yes/no): yes
@@ -1510,14 +1652,14 @@ Este comando registra una copia de seguridad de tipo snapshot
 
 ::
 
-   register_snapshot_definition [SrvID | FQDN] 
-                                [NodeID | FQDN] 
+   register_snapshot_definition [SrvID | FQDN]
+                                [NodeID | FQDN]
                                 [DBname]
-                                [DBname exceptions] 
+                                [DBname exceptions]
                                 [AT time]
-                                [backup code] 
-                                [retention period] 
-                                [extra backup parameters] 
+                                [backup code]
+                                [retention period]
+                                [extra backup parameters]
                                 [tag]
                                 [pg_dump/all release]
 
@@ -1530,7 +1672,7 @@ Parámetros:
   ejecutando la base de datos a la que se la va a realizar una copia
   de seguridad.
 
-* **[DBname]:** Nombre de la base de datos. 
+* **[DBname]:** Nombre de la base de datos.
 
   Se pueden definir multiples bases de datos separadas por comas.
 
@@ -1546,9 +1688,9 @@ Parámetros:
   Se pueden definir multiples bases de datos separadas por comas.
 
   Este valor será ignorado si utilizamos backup-code=CLUSTER.
-  
+
 * **[AT time]:** Momento en el que se ejecutará la copia de seguridad.
-* **[backup code]:** 
+* **[backup code]:**
 
   * CLUSTER: copia de seguridad de todas las bases de datos en el nodo
     PgSQL usando ``pg_dumpall``
@@ -1613,16 +1755,16 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    # Backup server SrvID / FQDN []: pg-backup01.example.net
    # PgSQL node NodeID / FQDN []: pg-node01.example.net
    # DBname []: test02
-   # AT timestamp [2014-05-31 17:52:28.756359]: 
-   # Backup code [FULL]: 
-   # Retention period [7 days]: 
-   # Extra parameters []: 
-   # Remarks []: 
+   # AT timestamp [2014-05-31 17:52:28.756359]:
+   # Backup code [FULL]:
+   # Retention period [7 days]:
+   # Extra parameters []:
+   # Remarks []:
    # pg_dump/all release [Same as pgSQL node running dbname]:
-   
+
    # Are all values correct (yes/no): yes
    --------------------------------------------------------
-   
+
    [Done] Snapshot for dbname: test02 defined.
 
 
@@ -1637,7 +1779,7 @@ parámetros internos usados para configurar PgBackMan.
    set [parameter=value]
 
 * **[parameter = value]**:
-  
+
   - output_format: [TABLE | JSON | CSV]
 
 
@@ -1685,12 +1827,12 @@ combinan con el operador lógico AND.
 
 ::
 
-   show_backup_catalog [SrvID|FQDN] 
-                       [NodeID|FQDN] 
-		       [DBname] 
-		       [DefID]
-		       [Status]
-   
+   show_backup_catalog [SrvID|FQDN]
+                       [NodeID|FQDN]
+                       [DBname]
+                       [DefID]
+                       [Status]
+
 Parámetros:
 
 * **[SrvID|FQDN]:** SrvID en PgBackMan o FQDN del servidor de
@@ -1740,7 +1882,7 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    +-----------+-------+------------+---------------------------+-----+-------------------------+----+-------------------------+-----------+----------+------------+------+-----------+-----------+
 
 ::
-   
+
    [pgbackman]$ show_backup_catalog
    --------------------------------------------------------
    # SrvID / FQDN: 1
@@ -1771,9 +1913,9 @@ condiciones de busqueda se combinan con el operador lógico AND.
 
 ::
 
-   show_backup_definitions [SrvID|FQDN] 
-                           [NodeID|FQDN] 
-			   [DBname]
+   show_backup_definitions [SrvID|FQDN]
+                           [NodeID|FQDN]
+                           [DBname]
 
 Parámetros:
 
@@ -1811,11 +1953,11 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    +-------------+-----+-------------------------+----+-------------------------+-----------+-------------+--------+------------+--------+------------+
 
 ::
-   
+
    [pgbackman]$ show_backup_definitions
    --------------------------------------------------------
-   # SrvID / FQDN [all]: 
-   # NodeID / FQDN [all]: 
+   # SrvID / FQDN [all]:
+   # NodeID / FQDN [all]:
    # DBname [all]: pgbackman
    --------------------------------------------------------
    +-------------+-----+-------------------------+----+-------------------------+-----------+-------------+--------+------------+--------+------------+
@@ -1831,7 +1973,7 @@ show_backup_details
 -------------------
 
 Este comando muestra todos los detalles asociados a una copia de
-seguridad en particular. 
+seguridad en particular.
 
 ::
 
@@ -1903,7 +2045,7 @@ servidor de backup.
 
 Parámetros:
 
-* **[SrvID | FQDN]:** SrvID en PgBackMan o FQDN del servidor de backups 
+* **[SrvID | FQDN]:** SrvID en PgBackMan o FQDN del servidor de backups
 
 Este comando se puede ejecutar con o sin parámetros, e.g.:
 
@@ -1930,7 +2072,32 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    | root_cron_file        | /etc/cron.d/pgbackman      | Crontab file used by pgbackman *Not used* |
    +-----------------------+----------------------------+-------------------------------------------+
 
+show_backup_server_default_configured_versions
+----------------------------------------------
 
+Este comando enumera todas las versiones de Postgres configuradas
+por defecto cuando se agregan nuevos servidores de backup.
+
+::
+
+   show_backup_server_default_configured_versions
+
+Este comando se puede ejecutar con o sin parámetros:
+
+::
+
+   [pgbackman]$ show_backup_server_default_configured_versions
+   +---------+-------------------+
+   | Version |    Binary Path    |
+   +---------+-------------------+
+   |    10   | /usr/pgsql-10/bin |
+   |    13   | /usr/pgsql-13/bin |
+   |    14   | /usr/pgsql-14/bin |
+   |    15   | /usr/pgsql-14/bin |
+   |    16   | /usr/pgsql-15/bin |
+   |    11   | /usr/pgsql-11/bin |
+   |    12   | /usr/pgsql-12/bin |
+   +---------+-------------------+
 
 show_backup_server_stats
 ------------------------
@@ -1944,7 +2111,7 @@ backups.
 
 Parámetros:
 
-* **[SrvID | FQDN]:** SrvID en PgBackMan o FQDN del servidor de backups. 
+* **[SrvID | FQDN]:** SrvID en PgBackMan o FQDN del servidor de backups.
 
 Este comando se puede ejecutar con o sin parámetros, e.g.:
 
@@ -1980,7 +2147,7 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
 
 
 
-show_backup_servers 
+show_backup_servers
 -------------------
 
 Este comando muestra todos los servidores de backups registrados en
@@ -2008,9 +2175,9 @@ show_databases_without_backup_definitions
 
 Este comando muestra una lista con todas las bases de datos en un nodo
 PgSQL sin una definición de copia de seguridad en PgBackMan.
-        
+
 ::
-  
+
    show_databases_without_backup_definitions [Node ID | FQDN]
 
 Parametros:
@@ -2075,14 +2242,14 @@ show_history
 ------------
 
 Muestra una lista de comandos que han sido ejecutados durante la
-sesión en uso en el shell de PgBackMan.  
+sesión en uso en el shell de PgBackMan.
 
 ::
 
    show_history
 
 Existe un alias para este comando, ``\s``, que se puede utilizar en
-vez de ``show_history``. 
+vez de ``show_history``.
 
 Tambièn se puede usar el *modo Emacs de busqueda en la historia de
 comandos* para obtener comandos ejecutados que contengan una cadena
@@ -2193,7 +2360,7 @@ Este comando se puede ejecutar solamente sin parámetros, e.g.:
    +-------------------------------+------------------------------------------+
 
 
-show_pgbackman_stats 
+show_pgbackman_stats
 --------------------
 
 Este comando muestra las estadísticas globales de la instalación en
@@ -2333,7 +2500,7 @@ show_pgsql_nodes
 Este comando muestra todos los nodos PgSQL registrados en PgBackMan.
 
 ::
- 
+
    show_pgsql_nodes
 
 Este comando se puede ejecutar solamente sin parámetros, e.g.:
@@ -2361,9 +2528,9 @@ lógico AND.
 
 ::
 
-   show_restore_catalog [SrvID|FQDN] 
-                        [NodeID|FQDN] 
-			[DBname]
+   show_restore_catalog [SrvID|FQDN]
+                        [NodeID|FQDN]
+                        [DBname]
 
 Parámetros:
 
@@ -2388,9 +2555,9 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
 
    [pgbackman]$ show_restore_catalog
    --------------------------------------------------------
-   # SrvID / FQDN [all]: 
-   # Target NodeID / FQDN [all]: 
-   # Target DBname [all]: 
+   # SrvID / FQDN [all]:
+   # Target NodeID / FQDN [all]:
+   # Target DBname [all]:
    --------------------------------------------------------
    +------------+------------+-------+---------------------------+-----+-------------------------+----+-------------------------+----------------+----------+-----------+
    | RestoreID  | RestoreDef | BckID | Finished                  | ID. | Backup server           | ID | Target PgSQL node       | Target DBname  | Duration |   Status  |
@@ -2398,7 +2565,7 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    | 0000000006 | 0000000006 |   34  | 2014-05-28 13:18:49+00:00 |  1  | pg-backup01.example.net | 1  | pgbackmandb.example.net | pgbackman_1313 | 0:00:01  | SUCCEEDED |
    | 0000000005 | 0000000005 |   34  | 2014-05-28 13:16:21+00:00 |  1  | pg-backup01.example.net | 1  | pgbackmandb.example.net | pgbackman_1212 | 0:00:02  | SUCCEEDED |
    +------------+------------+-------+---------------------------+-----+-------------------------+----+-------------------------+----------------+----------+-----------+
-   
+
 
 show_restore_definitions
 ------------------------
@@ -2409,10 +2576,10 @@ busqueda se combinan con el operador lógico AND.
 
 ::
 
-   show_restore_definitions [SrvID|FQDN] 
-                            [NodeID|FQDN] 
+   show_restore_definitions [SrvID|FQDN]
+                            [NodeID|FQDN]
                             [DBname]
-			
+
 Parámetros:
 
 * **[SrvID|FQDN]:** SrvID en PgBackMan o FQDN del servidor de
@@ -2439,14 +2606,14 @@ diferentes valores con los siguientes significados:
 * ERROR: No se ha podido definir el proceso AT
 
 Este comando se puede ejecutar con o sin parámetros, e.g.:
-	 
+
 ::
 
    [pgbackman]$ show_restore_definitions
    --------------------------------------------------------
-   # SrvID / FQDN [all]: 
-   # Target NodeID / FQDN [all]: 
-   # Target DBname [all]: 
+   # SrvID / FQDN [all]:
+   # Target NodeID / FQDN [all]:
+   # Target DBname [all]:
    --------------------------------------------------------
    +------------+---------------------------+-------+----+-------------------------+----------------+------------------+--------------+------------------+---------+
    | RestoreDef |         Registered        | BckID | ID | Target PgSQL node       | Target DBname  | Renamed database | AT time      | Extra parameters |  Status |
@@ -2472,10 +2639,10 @@ Parámetros:
   restauraciones.
 
 Este comando se puede ejecutar con o sin parámetros, e.g.:
-	 
+
 ::
 
-   [pgbackman]$ show_restore_details 
+   [pgbackman]$ show_restore_details
    --------------------------------------------------------
    # RestoreID: 6
    --------------------------------------------------------
@@ -2517,9 +2684,9 @@ Este comando muestra todos los procesos de restauración de datos que
 están en curso y que no se han completado todavia. ::
 
    show_restores_in_progress
-        
+
 Este comando se puede ejecutar solamente sin parámetros, e.g.:
-	 
+
 ::
 
    [pgbackman]$ show_restores_in_progress
@@ -2539,10 +2706,10 @@ busqueda se combinan con el operador lógico AND.
 
 ::
 
-   show_snapshot_definitions [SrvID|FQDN] 
-                             [NodeID|FQDN] 
+   show_snapshot_definitions [SrvID|FQDN]
+                             [NodeID|FQDN]
                              [DBname]
-        
+
 Parámetros:
 
 * **[SrvID|FQDN]:** SrvID en PgBackMan o FQDN del servidor de
@@ -2570,14 +2737,14 @@ significados:
 * ERROR: No se ha podido definir el proceso AT.
 
 Este comando se puede ejecutar con o sin parámetros, e.g.:
-	 
+
 ::
 
    [pgbackman]$ show_snapshot_definitions
    --------------------------------------------------------
-   # SrvID / FQDN [all]: 
-   # NodeID / FQDN [all]: 
-   # DBname [all]: 
+   # SrvID / FQDN [all]:
+   # NodeID / FQDN [all]:
+   # DBname [all]:
    --------------------------------------------------------
    +-------------+---------------------------+-----+-------------------------+----+-------------------------+-------------+--------------+------+-----------+---------------------------+---------+
    |  SnapshotID |         Registered        | ID. | Backup server           | ID | PgSQL node              | DBname      | AT time      | Code | Retention | Parameters                |  Status |
@@ -2601,9 +2768,9 @@ Este comando muestra todas las copias de seguridad de tipo snapshot
 que están en curso y que no se han completado todavia. ::
 
    show_snapshots_in_progress
-        
+
 Este comando se puede ejecutar solamente sin parámetros, e.g.:
-	 
+
 ::
 
    [pgbackman]$ show_snapshots_in_progress
@@ -2622,21 +2789,21 @@ update_backup_definition
 ------------------------
 
 Este comando actualiza la información de una definición de copias de
-respaldo programada. 
+respaldo programada.
 
 ::
 
    update_backup_definition [DefID]
-                            [min_cron] 
-                            [hour_cron] 
+                            [min_cron]
+                            [hour_cron]
                             [day-month_cron]
                             [month_cron]
                             [weekday_cron]
-                            [retention period] 
-			    [retention redundancy] 
-			    [extra backup parameters] 
-                            [job status] 
-                            [remarks] 
+                            [retention period]
+                            [retention redundancy]
+                            [extra backup parameters]
+                            [job status]
+                            [remarks]
 
 Parámetros:
 
@@ -2657,7 +2824,7 @@ Parámetros:
   con pg_dump / pg_dumpall.
 
 * **[job status]**
-        
+
   * ACTIVE: copia de seguridad activada y en producción.
   * STOPPED: copia de seguridad detenida.
 
@@ -2672,20 +2839,20 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    [pgbackman]$ update_backup_definition
    --------------------------------------------------------
    # DefID []: 12
-   # Minutes cron [41]: 
-   # Hours cron [01]: 
-   # Day-month cron [*]: 
-   # Month cron [*]: 
-   # Weekday cron [*]: 
+   # Minutes cron [41]:
+   # Hours cron [01]:
+   # Day-month cron [*]:
+   # Month cron [*]:
+   # Weekday cron [*]:
    # Retention period [7 days]: 5 days
-   # Retention redundancy [1]: 
-   # Extra backup parameters []: 
+   # Retention redundancy [1]:
+   # Extra backup parameters []:
    # Job status [STOPPED]: active
-   # Remarks []: 
-   
+   # Remarks []:
+
    # Are all values to update correct (yes/no): yes
    --------------------------------------------------------
-   
+
    [Done] Backup definition DefID: 12 updated.
 
 
@@ -2696,7 +2863,7 @@ Este comando actualiza la información de un servidor de backups.
 
 ::
 
-   update_backup_server [SrvID | FQDN] 
+   update_backup_server [SrvID | FQDN]
                         [remarks]
 
 Parámetros:
@@ -2716,7 +2883,7 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    --------------------------------------------------------
    # SrvID / FQDN []: 1
    # Remarks []: Backup server - 01
-   
+
    # Are all values to update correct (yes/no): yes
    --------------------------------------------------------
 
@@ -2732,28 +2899,23 @@ backups.
 ::
 
    update_backup_server_config [SrvID / FQDN]
-                               [PgSQL_bin_9.0]
-                               [PgSQL_bin_9.1]
-                               [PgSQL_bin_9.2]
-                               [PgSQL_bin_9.3]
-                               [PgSQL_bin_9.4]
-                               [PgSQL_bin_9.5]
-			       [PgSQL_bin_9.6]
-			       [PgSQL_bin_10]
-			       [root_backup_dir]
+                               [pgbackman dump command]
+                               [pgbackman restore command]
+                               [admin user]
+                               [domain]
+                               [root_backup_dir]
 
 Parámetros:
 
 * **[SrvID|FQDN]:** SrvID en PgBackMan o FQDN del servidor de backups.
-* **[PgSQL_bin_9.0]:** Directorio con los binarios de PostgreSQL 9.0. 
-* **[PgSQL_bin_9.1]:** Directorio con los binarios de PostgreSQL 9.1. 
-* **[PgSQL_bin_9.2]:** Directorio con los binarios de PostgreSQL 9.2. 
-* **[PgSQL_bin_9.3]:** Directorio con los binarios de PostgreSQL 9.3. 
-* **[PgSQL_bin_9.4]:** Directorio con los binarios de PostgreSQL 9.4. 
-* **[PgSQL_bin_9.5]:** Directorio con los binarios de PostgreSQL 9.5. 
-* **[PgSQL_bin_9.6]:** Directorio con los binarios de PostgreSQL 9.6. 
-* **[PgSQL_bin_10]:** Directorio con los binarios de PostgreSQL 10. 
-* **[root_backup_dir]:** Directorio para copias de seguridad usado por PgBackMan. 
+* **[pgbackman dump command]:** Programa utilizado para realizar las copias
+  de seguridad.
+* **[pgbackman restore command]:** Programa utilizado para restaurar Programa
+  utilizado para restaurar.
+* **[admin user]:** La roe de postgres utilizada al realizar y restaurar copias
+  de seguridad de bases de datos..
+* **[domain]:** Nombre de dominio por defecto
+* **[root_backup_dir]:** Directorio para copias de seguridad usado por PgBackMan.
 
 Los valores por defecto de un parámetro se enseñan entre
 corchetes``[]``. Si el usuario no define ningún valor, PgBackMan
@@ -2763,24 +2925,98 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
 
 ::
 
+   [pgbackman]$ update_backup_server_config 1 /usr/local/bin/pgbackman_dump /usr/local/bin/pgbackman_restore root example.com /mnt/backups
+   [DONE] Configuration parameters for SrvID: 1 updated.
+
+::
+
    [pgbackman]$ update_backup_server_config
    --------------------------------------------------------
-   # SrvID / FQDN []: 1
-   
-   # PgSQL bindir 9.0 [/usr/pgsql-9.0/bin]: /usr/lib/postgresql/9.0/bin 
-   # PgSQL bindir 9.1 [/usr/pgsql-9.1/bin]: /usr/lib/postgresql/9.1/bin
-   # PgSQL bindir 9.2 [/usr/pgsql-9.2/bin]: /usr/lib/postgresql/9.2/bin
-   # PgSQL bindir 9.3 [/usr/pgsql-9.3/bin]: /usr/lib/postgresql/9.3/bin
-   # PgSQL bindir 9.4 [/usr/pgsql-9.4/bin]: /usr/lib/postgresql/9.4/bin
-   # PgSQL bindir 9.5 [/usr/pgsql-9.5/bin]: /usr/lib/postgresql/9.5/bin 
-   # PgSQL bindir 9.6 [/usr/pgsql-9.6/bin]: /usr/lib/postgresql/9.6/bin
-   # PgSQL bindir 10 [/usr/pgsql-10/bin]: /usr/lib/postgresql/10/bin
-   # Main backup dir [/srv/pgbackman]: 
-   
+   # SrvID / FQDN [backup1.example.org]: 1
+
+   # pgbackman_dump command [/usr/local/bin/pgbackman_dump]: /usr/local/bin/pgbackman_dump
+   # pgbackman_restore command [/usr/local/bin/pgbackman_restore]: /usr/local/bin/pgbackman_restore
+   # Admin user [root]: root
+   # Domain [example.com]: example.com
+   # Main backup dir [/var/lib/pgbackman]: /var/lib/pgbackman
+
    # Are all values to update correct (yes/no): yes
    --------------------------------------------------------
-   
-   [Done] Configuration parameters for SrvID: 1 updated.
+   [DONE] Configuration parameters for SrvID: 1 updated.
+
+
+update_backup_server_default_pg_bin_dir
+---------------------------------------
+
+Este comando actualiza el directorio binario por defecto que se
+utilizará para una versión determinada de Postgres al agregar nuevos
+servidores de backup.
+
+::
+
+   update_backup_server_default_pg_bin_dir [postgres version]
+                                           [binary directory]
+Parámetros:
+
+* **[postgres version]:** La versión de postgres que se está configurando.
+* **[binary directory]:** El nuevo directorio binario que se utilizará para
+  esta versión de postgres al agregar servidores de backup.
+
+Este comando se puede ejecutar con o sin parámetros:
+
+::
+
+   [pgbackman]$ update_backup_server_default_pg_bin_dir 10 /usr/local/pgsql-10/bin
+   [DONE] Updated default binary directory for postgres version 10.
+
+::
+
+   [pgbackman]$ update_backup_server_default_pg_bin_dir
+   --------------------------------------------------------
+   # Postgres Version: 10
+   # Postgres binary directory: [/usr/pgsql-10/bin]: /usr/local/pgsql-10/bin
+
+   # Are all values to update correct (yes/no): yes
+   --------------------------------------------------------
+   [DONE] Updated default binary directory for postgres version 10.
+
+
+update_backup_server_pg_bin_dir
+---------------------------------------
+
+Este comando actualiza el directorio binario que se utilizará para una
+versión de postgres en un servidor de backup.
+
+::
+
+   update_backup_server_pg_bin_dir [SrvID | FQDN]
+                                   [postgres version]
+                                   [binary directory]
+Parameters:
+
+* **[SrvID | FQDN]:** SrvID en PgBackMan o FQDN del servidor de backups.
+* **[postgres version]:** La versión de postgres que se está configurando.
+* **[binary directory]:** El nuevo directorio binario que se utilizará para
+  esta versión de postgres en este servidor de backup.
+
+Este comando se puede ejecutar con o sin parámetros:
+
+::
+
+   [pgbackman]$ update_backup_server_pg_bin_dir 1 12 /usr/local/pgsql-12/bin
+   [DONE] Binary directory for postgres 12 for SrvID: 1 updated.
+
+::
+
+   [pgbackman]$ update_backup_server_pg_bin_dir
+   --------------------------------------------------------
+   # SrvID / FQDN [backup1.example.org]: 1
+   # Postgres Version: 12
+   # Postgres binary directory: [/usr/pgsql-12/bin]: /usr/local/pgsql-12/bin
+
+   # Are all values to update correct (yes/no): yes
+   --------------------------------------------------------
+   [DONE] Binary directory for postgres 12 for SrvID: 1 updated.
 
 
 update_pgsql_node
@@ -2790,20 +3026,20 @@ Este comando actualiza la información de un nodo PgSQL.
 
 ::
 
-  update_pgsql_node [NodeID | FQDN] 
-                    [pgport] 
-                    [admin_user] 
-                    [status] 
+  update_pgsql_node [NodeID | FQDN]
+                    [pgport]
+                    [admin_user]
+                    [status]
                     [remarks]
-		    
+
 Parámetros:
 
-* **[NodeID | FQDN]:** NodeID en PgBackMan o FQDN del nodo PgSQL. 
+* **[NodeID | FQDN]:** NodeID en PgBackMan o FQDN del nodo PgSQL.
 * **[pgport]:** Puerto usado por PostgreSQL.
 * **[admin_user]:** Usuario administrador en el nodo PgSQL.
 * **[status]:**
-  
-  * RUNNING: El nodo PgSQL esta activo y en producción. 
+
+  * RUNNING: El nodo PgSQL esta activo y en producción.
   * DOWN: El nodo PgSQL no se encuentra activado.
 
 * **[remarks]:** Comentarios.
@@ -2823,11 +3059,11 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    [pgbackman]$ update_pgsql_node
    --------------------------------------------------------
    # NodeID / FQDN []: 1
-   # Port [5432]: 
-   # Admin user [postgres]: 
+   # Port [5432]:
+   # Admin user [postgres]:
    # Status[RUNNING]: stopped
    # Remarks []: Testing update
-   
+
    # Are all values to update correct (yes/no): yes
    --------------------------------------------------------
 
@@ -2844,24 +3080,24 @@ un nodo PgSQL.
 
    update_pgsql_node_config [NodeID / FQDN]
                             [min_cron interval]
-			    [hours_cron interval]
-			    [daymonth_cron]
+                            [hours_cron interval]
+                            [daymonth_cron]
                             [month_cron]
                             [weekday_cron]
-			    [backup code]
-			    [retention period]
+                            [backup code]
+                            [retention period]
                             [retention redundancy]
-			    [automatic deletion retention]
+                            [automatic deletion retention]
                             [extra backup parameters]
-			    [extra restore parameters]
+                            [extra restore parameters]
                             [backup job status]
                             [domain]
-			    [logs email]
-			    [admin user]
-			    [pgport]
-			    [pgnode backup dir]
-			    [pgnode crontab file]
-			    [pgnode status]
+                            [logs email]
+                            [admin user]
+                            [pgport]
+                            [pgnode backup dir]
+                            [pgnode crontab file]
+                            [pgnode status]
 
 Parámetros:
 
@@ -2880,7 +3116,7 @@ Parámetros:
 * **[automatic deletion retention]:** Intervalo de tiempo que una
   copia de seguridad estará disponible en el catálogo después de que
   la base de datos a la que pertenece haya sido borrada en el nodo
-  PgSQL. Este parámetro anula [retention period] y [retention redundancy] si la 
+  PgSQL. Este parámetro anula [retention period] y [retention redundancy] si la
   base de datos ha sido borrada en el nodo PgSQL.
 * **[extra backup parameters]:** Parámetros extras que se pueden usar con pg_dump/pg_dumpall.
 * **[extra restore parameters]:** Parámetros extrasque se pueden usar con pg_restore.
@@ -2904,35 +3140,35 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    [pgbackman]$ update_pgsql_node_config
    --------------------------------------------------------
    # NodeID / FQDN []: 1
-   
-   # Minutes cron interval [01-59]: 
-   # Hours cron interval [01-06]: 
-   # Day-month cron [*]: 
-   # Month cron [*]: 
-   # Weekday cron [*]: 
-   
-   # Backup code [FULL]: 
+
+   # Minutes cron interval [01-59]:
+   # Hours cron interval [01-06]:
+   # Day-month cron [*]:
+   # Month cron [*]:
+   # Weekday cron [*]:
+
+   # Backup code [FULL]:
    # Retention period [7 days]: 5 days
-   # Retention redundancy [1]: 
+   # Retention redundancy [1]:
    # Automatic deletion retention [14 days]: 30 days
-   # Extra backup parameters []: 
-   # Extra restore parameters []: 
-   # Backup Job status [ACTIVE]: 
-   
-   # Domain [example.net]: 
-   # Logs e-mail [example@example.net]: 
-   # PostgreSQL admin user [postgres]: 
-   # Port [5432]: 
-   
-   # Backup directory [/srv/pgbackman/pgsql_node_1]: 
-   # Crontab file [/etc/cron.d/pgsql_node_1]: 
-   # PgSQL node status [STOPPED]: 
-   
+   # Extra backup parameters []:
+   # Extra restore parameters []:
+   # Backup Job status [ACTIVE]:
+
+   # Domain [example.net]:
+   # Logs e-mail [example@example.net]:
+   # PostgreSQL admin user [postgres]:
+   # Port [5432]:
+
+   # Backup directory [/srv/pgbackman/pgsql_node_1]:
+   # Crontab file [/etc/cron.d/pgsql_node_1]:
+   # PgSQL node status [STOPPED]:
+
    # Are all values to update correct (yes/no): yes
    --------------------------------------------------------
 
    [Done] Default configuration parameters for NodeID: 1 updated.
-		    
+
 
 
 Sobre copias de seguridad en PostgreSQL
