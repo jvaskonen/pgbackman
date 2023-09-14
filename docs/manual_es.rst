@@ -1122,6 +1122,7 @@ Este comando se puede ejecutar con o sin parámetros::
    --------------------------------------------------------
    [DONE] Dropped postgres 14 for SrvID: 1.
 
+   
 delete_pgsql_node
 -----------------
 
@@ -1474,6 +1475,7 @@ Este comando se puede ejecutar con o sin parámetros:
    --------------------------------------------------------
    [DONE] Configured default binary directory for postgre 11.
 
+
 register_backup_server_pg_bin_dir
 ---------------------------------
 
@@ -1510,6 +1512,7 @@ Este comando se puede ejecutar con o sin parámetros:
    # Are all values to update correct (yes/no): yes
    --------------------------------------------------------
    [DONE] Configured postgres 18 for SrvID: 1.
+
 
 register_pgsql_node
 -------------------
@@ -2072,6 +2075,7 @@ Este comando se puede ejecutar con o sin parámetros, e.g.:
    | root_cron_file        | /etc/cron.d/pgbackman      | Crontab file used by pgbackman *Not used* |
    +-----------------------+----------------------------+-------------------------------------------+
 
+
 show_backup_server_default_configured_versions
 ----------------------------------------------
 
@@ -2098,6 +2102,7 @@ Este comando se puede ejecutar con o sin parámetros:
    |    11   | /usr/pgsql-11/bin |
    |    12   | /usr/pgsql-12/bin |
    +---------+-------------------+
+
 
 show_backup_server_stats
 ------------------------

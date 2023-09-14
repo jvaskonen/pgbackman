@@ -1054,6 +1054,7 @@ This command can be run with or without parameters. e.g.:
    --------------------------------------------------------
    [DONE] Dropped postgres 14 for SrvID: 1.
 
+
 delete_pgsql_node
 -----------------
 
@@ -1359,6 +1360,7 @@ used. This command can be run with or without parameters. e.g
 
     [Done] Backup server backup01.example.org registered.
 
+
 register_backup_server_default_pg_bin_dir
 -----------------------------------------
 
@@ -1396,6 +1398,7 @@ This command can be run with or without parameters:
    --------------------------------------------------------
    [DONE] Configured default binary directory for postgre 11.
 
+
 register_backup_server_pg_bin_dir
 ---------------------------------
 
@@ -1432,6 +1435,7 @@ This command can be run with or without parameters:
    # Are all values to update correct (yes/no): yes
    --------------------------------------------------------
    [DONE] Configured postgres 18 for SrvID: 1.
+
 
 register_pgsql_node
 -------------------
@@ -2033,6 +2037,7 @@ This command can be run only without parameters. e.g.:
    | 00003 | backup02.example.org    | test server |
    +-------+-------------------------+-------------+
 
+
 show_backup_server_default_configured_versions
 ----------------------------------------------
 
@@ -2059,6 +2064,7 @@ This command can only be run without parameters:
    |    11   | /usr/pgsql-11/bin |
    |    12   | /usr/pgsql-12/bin |
    +---------+-------------------+
+
 
 show_databases_without_backup_definitions
 -----------------------------------------
