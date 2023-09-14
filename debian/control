@@ -7,8 +7,8 @@ Build-Depends: debhelper (>= 9~)
  , python-setuptools
 Standards-Version: 3.9.8
 Homepage: http://www.pgbackman.org/
-Vcs-Browser: https://github.com/rafaelma/pgbackman
-Vcs-Git: git://github.com/rafaelma/pgbackman.git
+Vcs-Browser: https://github.com/jvaskonen/pgbackman
+Vcs-Git: git://github.com/jvaskonen/pgbackman.git
 X-Python-Version: >= 2.6
 
 Package: pgbackman
@@ -16,7 +16,6 @@ Architecture: all
 Depends: ${misc:Depends}
  , ${python:Depends}
  , python-psycopg2 (>= 2.4.0)
- , python-argparse
  , at
  , cron
  ,adduser

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # Ref: http://code.activestate.com/recipes/576693-ordered-dictionary-for-py24/
 # Created by Raymond Hettinger on Wed, 18 Mar 2009 (MIT)

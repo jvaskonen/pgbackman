@@ -1,5 +1,5 @@
 --
--- PgBackMan database - Version 4:1_3_0
+-- PgBackMan database - Version 5:1_3_1
 --
 -- Copyright (c) 2013-2017 Rafael Martinez Guerrero / PostgreSQL-es
 -- rafael@postgresql.org.es / http://www.postgresql.org.es/
@@ -929,23 +929,22 @@ INSERT INTO job_execution_method (code,description) VALUES ('AT','Job startet by
 
 \echo '# [Init: backup_server_default_config]\n'
 
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('root_backup_partition','/srv/pgbackman','Main partition used by pgbackman');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('root_cron_file','/etc/cron.d/pgbackman','Crontab file used by pgbackman - *Not used*');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('domain','example.org','Default domain');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('backup_server_status','RUNNING','Default backup server status - *Not used*');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgbackman_dump','/usr/bin/pgbackman_dump','Program used to take backup dumps');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgbackman_restore','/usr/bin/pgbackman_restore','Program used to restore backup dumps');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('admin_user','postgres','postgreSQL admin user');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_10','/usr/pgsql-10/bin','postgreSQL 10 bin directory');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_9_6','/usr/pgsql-9.6/bin','postgreSQL 9.6 bin directory');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_9_5','/usr/pgsql-9.5/bin','postgreSQL 9.5 bin directory');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_9_4','/usr/pgsql-9.4/bin','postgreSQL 9.4 bin directory');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_9_3','/usr/pgsql-9.3/bin','postgreSQL 9.3 bin directory');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_9_2','/usr/pgsql-9.2/bin','postgreSQL 9.2 bin directory');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_9_1','/usr/pgsql-9.1/bin','postgreSQL 9.1 bin directory');
-INSERT INTO backup_server_default_config (parameter,value,description) VALUES ('pgsql_bin_9_0','/usr/pgsql-9.0/bin','postgreSQL 9.0 bin directory');
-
-
+INSERT INTO backup_server_default_config (parameter,value,description)
+       VALUES ('root_backup_partition','/srv/pgbackman','Main partition used by pgbackman'),
+              ('root_cron_file','/etc/cron.d/pgbackman','Crontab file used by pgbackman - *Not used*'),
+              ('domain','example.org','Default domain'),
+              ('backup_server_status','RUNNING','Default backup server status - *Not used*'),
+              ('pgbackman_dump','/usr/bin/pgbackman_dump','Program used to take backup dumps'),
+              ('pgbackman_restore','/usr/bin/pgbackman_restore','Program used to restore backup dumps'),
+              ('admin_user','postgres','postgreSQL admin user'),
+              ('pgsql_bin_10','/usr/pgsql-10/bin','postgreSQL 10 bin directory'),
+              ('pgsql_bin_11','/usr/pgsql-11/bin','postgreSQL 11 bin directory'),
+              ('pgsql_bin_12','/usr/pgsql-12/bin','postgreSQL 12 bin directory'),
+              ('pgsql_bin_13','/usr/pgsql-13/bin','postgreSQL 13 bin directory'),
+              ('pgsql_bin_14','/usr/pgsql-14/bin','postgreSQL 14 bin directory'),
+              ('pgsql_bin_15','/usr/pgsql-14/bin','postgreSQL 14 bin directory'),
+              ('pgsql_bin_16','/usr/pgsql-15/bin','postgreSQL 15 bin directory');
+        
 \echo '# [Init: pgsql_node_default_config]\n'
 
 INSERT INTO pgsql_node_default_config (parameter,value,description) VALUES ('pgnode_backup_partition','/srv/pgbackman/pgsql_node_%%pgnode%%','Partition to save pgbackman information for a pgnode');
@@ -978,7 +977,7 @@ INSERT INTO alert_type (code,description) VALUES ('Restore-def','Alerts from fai
 
 \echo '# [Update: pgbackman_version]\n'
 
-INSERT INTO pgbackman_version (version,tag) VALUES ('3','v_1_2_0');
+INSERT INTO pgbackman_version (version,tag) VALUES ('5','v_1_3_1');
 
 
 -- ------------------------------------------------------------
@@ -1124,6 +1123,322 @@ ALTER FUNCTION update_backup_server_configuration() OWNER TO pgbackman_role_rw;
 CREATE TRIGGER update_backup_server_configuration AFTER INSERT
     ON backup_server FOR EACH ROW
     EXECUTE PROCEDURE update_backup_server_configuration();
+
+
+-- -------------------------------------------------------------------------------------------------------------
+-- Function: apply_new_backup_server_default()
+-- When a new backup server default value is insert, update all existing server configurations with that default
+-- -------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION apply_new_backup_server_default() RETURNS TRIGGER
+ LANGUAGE plpgsql
+ SECURITY INVOKER
+ SET search_path = public, pg_temp
+ AS $$
+ BEGIN
+
+  EXECUTE 'INSERT INTO backup_server_config (server_id,parameter,value,description)
+           SELECT backup_server.server_id, parameter, value, description
+           FROM backup_server_default_config, backup_server
+           WHERE backup_server_default_config.parameter = $1
+                 AND NOT EXISTS( SELECT 1
+                                 FROM backup_server_config
+                                 WHERE backup_server_config.parameter = $1
+                                 AND backup_server_config.server_id = backup_server.server_id
+                               )
+          '
+  USING NEW.parameter;
+
+  RETURN NULL;
+
+END;
+$$;
+
+ALTER FUNCTION apply_new_backup_server_default() OWNER TO pgbackman_role_rw;
+
+CREATE TRIGGER apply_new_backup_server_default AFTER INSERT
+    ON backup_server_default_config FOR EACH ROW
+    EXECUTE PROCEDURE apply_new_backup_server_default();
+
+-- Function register_backup_server_pg_bin_dir
+-- Adds the postgres binary directory for a given server and version of postgres
+
+CREATE OR REPLACE FUNCTION register_backup_server_pg_bin_dir(INTEGER,TEXT,TEXT,TEXT) RETURNS VOID
+ LANGUAGE plpgsql
+ SECURITY INVOKER
+ SET search_path = public, pg_temp
+ AS $$
+ DECLARE
+  backup_server_id_      ALIAS FOR $1;
+  postgres_version_      ALIAS FOR $2;
+  bin_dir_               ALIAS FOR $3;
+  description_           ALIAS FOR $4;
+
+  server_cnt INTEGER;
+  v_msg     TEXT;
+  v_detail  TEXT;
+  v_context TEXT;
+ BEGIN
+
+   SELECT count(*)
+       FROM backup_server
+       WHERE server_id = backup_server_id_
+       INTO server_cnt;
+
+   IF server_cnt != 0 THEN
+
+     EXECUTE 'INSERT INTO backup_server_config (server_id,parameter,value,description)
+              VALUES ( $1, ''pgsql_bin_'' || $2, $3, $4)'
+     USING backup_server_id_,
+           bin_dir_,
+           postgres_version_,
+           description_;
+
+    ELSE
+      RAISE EXCEPTION 'Backup server % does not exist',backup_server_id_;
+    END IF;
+
+   EXCEPTION WHEN others THEN
+        GET STACKED DIAGNOSTICS
+            v_msg     = MESSAGE_TEXT,
+            v_detail  = PG_EXCEPTION_DETAIL,
+            v_context = PG_EXCEPTION_CONTEXT;
+        RAISE EXCEPTION E'\n----------------------------------------------\nEXCEPTION:\n----------------------------------------------\nMESSAGE: % \nDETAIL : % \n----------------------------------------------\n', v_msg, v_detail;
+  END;
+$$;
+
+ALTER FUNCTION register_backup_server_pg_bin_dir(INTEGER,TEXT,TEXT,TEXT) OWNER TO pgbackman_role_rw;
+
+-- Function register_backup_server_default_pg_bin_dir
+-- Sets the default postgres binary directory for a given version of postgres
+
+CREATE OR REPLACE FUNCTION register_backup_server_default_pg_bin_dir(TEXT,TEXT,TEXT) RETURNS VOID
+ LANGUAGE plpgsql
+ SECURITY INVOKER
+ SET search_path = public, pg_temp
+ AS $$
+ DECLARE
+  postgres_version_      ALIAS FOR $1;
+  bin_dir_               ALIAS FOR $2;
+  description_           ALIAS FOR $3;
+
+  config_cnt INTEGER;
+  v_msg     TEXT;
+  v_detail  TEXT;
+  v_context TEXT;
+ BEGIN
+
+   SELECT count(*)
+       FROM backup_server_default_config
+       WHERE parameter = 'pgsql_bin_' || postgres_version_
+       INTO config_cnt;
+
+   IF config_cnt = 0 THEN
+
+     EXECUTE 'INSERT INTO backup_server_default_config(parameter,value,description)
+              VALUES (''pgsql_bin_'' || $2, $1, $3)'
+     USING bin_dir_,
+           postgres_version_,
+           description_;
+
+    ELSE
+      RAISE EXCEPTION 'A default binary directory for postgres % has already been configured', postgres_version_;
+    END IF;
+
+   EXCEPTION WHEN others THEN
+        GET STACKED DIAGNOSTICS
+            v_msg     = MESSAGE_TEXT,
+            v_detail  = PG_EXCEPTION_DETAIL,
+            v_context = PG_EXCEPTION_CONTEXT;
+        RAISE EXCEPTION E'\n----------------------------------------------\nEXCEPTION:\n----------------------------------------------\nMESSAGE: % \nDETAIL : % \n----------------------------------------------\n', v_msg, v_detail;
+  END;
+$$;
+
+ALTER FUNCTION register_backup_server_default_pg_bin_dir(TEXT,TEXT,TEXT) OWNER TO pgbackman_role_rw;
+
+-- Function update_backup_server_pg_bin_dir
+-- Sets the postgres binary directory for a given server and version of postgres
+
+CREATE OR REPLACE FUNCTION update_backup_server_pg_bin_dir(INTEGER,TEXT,TEXT) RETURNS VOID
+ LANGUAGE plpgsql
+ SECURITY INVOKER
+ SET search_path = public, pg_temp
+ AS $$
+ DECLARE
+  backup_server_id_      ALIAS FOR $1;
+  postgres_version_      ALIAS FOR $2;
+  bin_dir_               ALIAS FOR $3;
+
+  server_cnt INTEGER;
+  v_msg     TEXT;
+  v_detail  TEXT;
+  v_context TEXT;
+ BEGIN
+
+   SELECT count(*)
+       FROM backup_server
+            JOIN backup_server_config ON backup_server_config.server_id = backup_server.server_id
+       WHERE backup_server.server_id = backup_server_id_
+             AND parameter = 'pgsql_bin_' || postgres_version_
+       INTO server_cnt;
+
+   IF server_cnt != 0 THEN
+
+     EXECUTE 'UPDATE backup_server_config
+              SET value = $2
+              WHERE server_id = $1 AND parameter = ''pgsql_bin_'' || $3'
+     USING backup_server_id_,
+           bin_dir_,
+           postgres_version_;
+
+    ELSE
+      RAISE EXCEPTION 'Backup server % does not exist or does have postgres % configured',backup_server_id_, postgres_version_;
+    END IF;
+
+   EXCEPTION WHEN others THEN
+        GET STACKED DIAGNOSTICS
+            v_msg     = MESSAGE_TEXT,
+            v_detail  = PG_EXCEPTION_DETAIL,
+            v_context = PG_EXCEPTION_CONTEXT;
+        RAISE EXCEPTION E'\n----------------------------------------------\nEXCEPTION:\n----------------------------------------------\nMESSAGE: % \nDETAIL : % \n----------------------------------------------\n', v_msg, v_detail;
+  END;
+$$;
+
+ALTER FUNCTION update_backup_server_pg_bin_dir(INTEGER,TEXT,TEXT) OWNER TO pgbackman_role_rw;
+
+-- Function update_backup_server_default_pg_bin_dir
+-- Sets the default postgres binary directory for a given version of postgres
+
+CREATE OR REPLACE FUNCTION update_backup_server_default_pg_bin_dir(TEXT,TEXT) RETURNS VOID
+ LANGUAGE plpgsql
+ SECURITY INVOKER
+ SET search_path = public, pg_temp
+ AS $$
+ DECLARE
+  postgres_version_      ALIAS FOR $1;
+  bin_dir_               ALIAS FOR $2;
+
+  server_cnt INTEGER;
+  v_msg     TEXT;
+  v_detail  TEXT;
+  v_context TEXT;
+ BEGIN
+
+   SELECT count(*)
+       FROM backup_server_default_config
+       WHERE parameter = 'pgsql_bin_' || postgres_version_
+       INTO server_cnt;
+
+   IF server_cnt != 0 THEN
+
+     EXECUTE 'UPDATE backup_server_default_config
+              SET value = $1 WHERE parameter = ''pgsql_bin_'' || $2'
+     USING bin_dir_,
+           postgres_version_;
+
+    ELSE
+      RAISE EXCEPTION 'A default binary directory for postgres % has not been configured', postgres_version_;
+    END IF;
+
+   EXCEPTION WHEN others THEN
+        GET STACKED DIAGNOSTICS
+            v_msg     = MESSAGE_TEXT,
+            v_detail  = PG_EXCEPTION_DETAIL,
+            v_context = PG_EXCEPTION_CONTEXT;
+        RAISE EXCEPTION E'\n----------------------------------------------\nEXCEPTION:\n----------------------------------------------\nMESSAGE: % \nDETAIL : % \n----------------------------------------------\n', v_msg, v_detail;
+  END;
+$$;
+
+ALTER FUNCTION update_backup_server_default_pg_bin_dir(TEXT,TEXT) OWNER TO pgbackman_role_rw;
+
+-- Function delete_backup_server_pg_bin_dir
+-- Drop support for a given version of postgres from the specified backup server
+
+CREATE OR REPLACE FUNCTION delete_backup_server_pg_bin_dir(INTEGER,TEXT) RETURNS VOID
+ LANGUAGE plpgsql
+ SECURITY INVOKER
+ SET search_path = public, pg_temp
+ AS $$
+ DECLARE
+  backup_server_id_      ALIAS FOR $1;
+  postgres_version_      ALIAS FOR $2;
+
+  server_cnt INTEGER;
+  v_msg     TEXT;
+  v_detail  TEXT;
+  v_context TEXT;
+ BEGIN
+
+   SELECT count(*)
+       FROM backup_server_config
+       WHERE server_id = backup_server_id_
+             AND parameter = 'pgsql_bin_' || postgres_version_
+       INTO server_cnt;
+
+   IF server_cnt != 0 THEN
+
+     EXECUTE 'DELETE FROM backup_server_config
+              WHERE server_id = $1 AND parameter = ''pgsql_bin_'' || $2'
+     USING backup_server_id_,
+           postgres_version_;
+
+    ELSE
+      RAISE EXCEPTION 'Server % does not exist or postgres version % has not been configured', backup_server_id_, postgres_version_;
+    END IF;
+
+   EXCEPTION WHEN others THEN
+        GET STACKED DIAGNOSTICS
+            v_msg     = MESSAGE_TEXT,
+            v_detail  = PG_EXCEPTION_DETAIL,
+            v_context = PG_EXCEPTION_CONTEXT;
+        RAISE EXCEPTION E'\n----------------------------------------------\nEXCEPTION:\n----------------------------------------------\nMESSAGE: % \nDETAIL : % \n----------------------------------------------\n', v_msg, v_detail;
+  END;
+$$;
+
+ALTER FUNCTION delete_backup_server_pg_bin_dir(INTEGER,TEXT) OWNER TO pgbackman_role_rw;
+
+-- Function delete_backup_server_default_pg_bin_dir
+-- Drop support for a given version from the backup server defaults
+
+CREATE OR REPLACE FUNCTION delete_backup_server_default_pg_bin_dir(TEXT) RETURNS VOID
+ LANGUAGE plpgsql
+ SECURITY INVOKER
+ SET search_path = public, pg_temp
+ AS $$
+ DECLARE
+  postgres_version_      ALIAS FOR $1;
+
+  config_cnt INTEGER;
+  v_msg     TEXT;
+  v_detail  TEXT;
+  v_context TEXT;
+ BEGIN
+
+   SELECT count(*)
+       FROM backup_server_default_config
+       WHERE parameter = 'pgsql_bin_' || postgres_version_
+       INTO config_cnt;
+
+   IF config_cnt != 0 THEN
+
+     EXECUTE 'DELETE FROM backup_server_default_config
+              WHERE parameter = ''pgsql_bin_'' || $1'
+     USING postgres_version_;
+
+    ELSE
+      RAISE EXCEPTION 'A default binary directory for postgres % has not been configured', postgres_version_;
+    END IF;
+
+   EXCEPTION WHEN others THEN
+        GET STACKED DIAGNOSTICS
+            v_msg     = MESSAGE_TEXT,
+            v_detail  = PG_EXCEPTION_DETAIL,
+            v_context = PG_EXCEPTION_CONTEXT;
+        RAISE EXCEPTION E'\n----------------------------------------------\nEXCEPTION:\n----------------------------------------------\nMESSAGE: % \nDETAIL : % \n----------------------------------------------\n', v_msg, v_detail;
+  END;
+$$;
+
+ALTER FUNCTION delete_backup_server_default_pg_bin_dir(TEXT) OWNER TO pgbackman_role_rw;
 
 
 -- ------------------------------------------------------------
@@ -1969,22 +2284,18 @@ ALTER FUNCTION update_pgsql_node_config(INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,IN
 --
 -- ------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION update_backup_server_config(INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) RETURNS VOID
+CREATE OR REPLACE FUNCTION update_backup_server_config(INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT) RETURNS VOID
  LANGUAGE plpgsql
  SECURITY INVOKER
  SET search_path = public, pg_temp
  AS $$
  DECLARE
-  backup_server_id_ ALIAS FOR $1;
-  pgsql_bin_9_0_ ALIAS FOR $2;
-  pgsql_bin_9_1_ ALIAS FOR $3;
-  pgsql_bin_9_2_ ALIAS FOR $4;
-  pgsql_bin_9_3_ ALIAS FOR $5;
-  pgsql_bin_9_4_ ALIAS FOR $6;
-  pgsql_bin_9_5_ ALIAS FOR $7;
-  pgsql_bin_9_6_ ALIAS FOR $8;
-  pgsql_bin_10_ ALIAS FOR $9;
-  root_backup_partition_ ALIAS FOR $10;
+  backup_server_id_      ALIAS FOR $1;
+  pgbackman_dump_        ALIAS FOR $2;
+  pgbackman_restore_     ALIAS FOR $3;
+  admin_user_            ALIAS FOR $4;
+  domain_                ALIAS FOR $5;
+  root_backup_partition_ ALIAS FOR $6;
 
   server_cnt INTEGER;
   v_msg     TEXT;
@@ -1996,48 +2307,32 @@ CREATE OR REPLACE FUNCTION update_backup_server_config(INTEGER,TEXT,TEXT,TEXT,TE
 
    IF server_cnt != 0 THEN
 
-     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_9_0'''
+     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgbackman_dump'''
      USING backup_server_id_,
-     	   pgsql_bin_9_0_;
+           pgbackman_dump_;
 
-     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_9_1'''
+     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgbackman_restore'''
      USING backup_server_id_,
-     	   pgsql_bin_9_1_;
+           pgbackman_restore_;
 
-    EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_9_2'''
+     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''admin_user'''
      USING backup_server_id_,
-     	   pgsql_bin_9_2_;
+           admin_user_;
 
-    EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_9_3'''
+     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''domain'''
      USING backup_server_id_,
-     	   pgsql_bin_9_3_;
+           domain_;
 
-    EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_9_4'''
+     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''root_backup_partition'''
      USING backup_server_id_,
-     	   pgsql_bin_9_4_;
-
-     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_9_5'''
-     USING backup_server_id_,
-     	   pgsql_bin_9_5_;
-
-     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_9_6'''
-     USING backup_server_id_,
-     	   pgsql_bin_9_6_;
-
-     EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''pgsql_bin_10'''
-     USING backup_server_id_,
-     	   pgsql_bin_10_;
-
-   EXECUTE 'UPDATE backup_server_config SET value = $2 WHERE server_id = $1 AND parameter = ''root_backup_partition'''
-     USING backup_server_id_,
-     	   root_backup_partition_;
+           root_backup_partition_;
 
     ELSE
       RAISE EXCEPTION 'Backup server % does not exist',backup_server_id_;
     END IF;
 
    EXCEPTION WHEN others THEN
-   	GET STACKED DIAGNOSTICS
+        GET STACKED DIAGNOSTICS
             v_msg     = MESSAGE_TEXT,
             v_detail  = PG_EXCEPTION_DETAIL,
             v_context = PG_EXCEPTION_CONTEXT;
@@ -2045,8 +2340,7 @@ CREATE OR REPLACE FUNCTION update_backup_server_config(INTEGER,TEXT,TEXT,TEXT,TE
   END;
 $$;
 
-ALTER FUNCTION update_backup_server_config(INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) OWNER TO pgbackman_role_rw;
-
+ALTER FUNCTION update_backup_server_config(INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT) OWNER TO pgbackman_role_rw;
 
 -- ------------------------------------------------------------
 -- Function: register_backup_definition()

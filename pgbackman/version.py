@@ -1,2 +1,2 @@
-#!/usr/bin/env python
-__version__ = '3:1.2.0'
+#!/usr/bin/env python2
+__version__ = '5:1.3.1'
