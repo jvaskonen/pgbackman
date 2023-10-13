@@ -5,8 +5,10 @@
 #
 # Copyright (c) 2014 USIT-University of Oslo
 #
+# Copyright (c) 2023 James Miller
+#
 # This file is part of PgBackMan
-# https://github.com/rafaelma/pgbackman
+# https://github.com/jvaskonen/pgbackman
 #
 # PgBackMan is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -6330,7 +6332,7 @@ class PgbackmanCli(cmd.Cmd):
 
         print '''
         The latest information and versions of PgBackMan can be obtained
-        from: http://www.pgbackman.org/
+        from: https://github.com/jvaskonen/pgbackman
 
         Mailing list
         ------------
@@ -6346,7 +6348,7 @@ class PgbackmanCli(cmd.Cmd):
         -----------------------------
         If you find a bug or have a feature request, file them on
         GitHub / pgbackman:
-        https://github.com/rafaelma/pgbackman/issues
+        https://github.com/jvaskonen/pgbackman/issues
 
         IRC channel
         -----------

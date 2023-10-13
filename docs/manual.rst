@@ -5,10 +5,10 @@ PgBackMan - PostgreSQL Backup Manager
 |
 | Version-1.3.1
 |
-| Author: Rafael Martinez Guerrero (University of Oslo)
-| E-mail: rafael@postgresql.org.es
+| Original Author: Rafael Martinez Guerrero (University of Oslo)
+| Author: James Miller
+| E-mail: jvaskonen@toastaddict.org
 | Source: https://github.com/jvaskonen/pgbackman
-| Web: http://www.pgbackman.org/
 |
 
 .. contents::
@@ -191,7 +191,7 @@ version from the master branch at the GitHub repository.
 ::
 
  [root@server]# cd
- [root@server]# git clone https://github.com/rafaelma/pgbackman.git
+ [root@server]# git clone https://github.com/jvaskonen/pgbackman.git
 
  [root@server]# cd pgbackman
  [root@server]# ./setup2.py install --install-scripts=/usr/bin
@@ -199,34 +199,6 @@ version from the master branch at the GitHub repository.
 
 This will install all users, groups, programs, configuration files, logfiles and the
 pgbackman module in your system.
-
-
-Installing via RPM packages
----------------------------
-
-RPM packages for CentOS 6/7 and RHEL6/7 are available at
-http://www.pgbackman.org/download.html
-
-Install the RPM package with::
-
-  [root@server]# rpm -Uvh pgbackman-<version>.rpm
-
-We are working to get RPM packages for PgBackMan in the official
-PostgreSQL Yum repository.
-
-
-Installing via Deb packages
-----------------------------
-
-Deb packages for Debian7 are available at
-http://www.pgbackman.org/download.html
-
-Install the Deb package with::
-
-  [root@server]# dpkg -i pgbackman_<version>.deb
-
-We are working to get DEB packages for PgBackMan in the official
-PostgreSQL apt repository.
 
 
 Installing the pgbackman Database
@@ -3132,7 +3104,7 @@ production at the University of Oslo. However, as any software,
 PgBackMan is not bug free.
 
 If you discover a bug, please file a bug through the GitHub Issue page
-for the project at: https://github.com/rafaelma/pgbackman/issues
+for the project at: https://github.com/jvaskonen/pgbackman/issues
 
 
 Authors
@@ -3145,15 +3117,17 @@ In alphabetical order:
 | E-mail: rafael@postgresql.org.es / rafael@usit.uio.no
 | PostgreSQL-es / University Center for Information Technology (USIT), University of Oslo, Norway
 |
+| James Miller
+| E-mail: jvaskonen@toastadict.org
 
 License and Contributions
 =========================
 
-PgBackMan is the property of Rafael Martinez Guerrero / PostgreSQL-es
-and USIT-University of Oslo, and its code is distributed under GNU
-General Public License 3.
+PgBackMan is the property of Rafael Martinez Guerrero / PostgreSQL-es,
+James Miller and USIT-University of Oslo, and its code is distributed
+under GNU General Public License 3.
 
 | Copyright © 2013-2014 Rafael Martinez Guerrero / PostgreSQL-es
 | Copyright © 2014 USIT-University of Oslo.
+| Copyright © 2023 James Miller
 
-Repackaged with minor modifications by James Miller in 2023

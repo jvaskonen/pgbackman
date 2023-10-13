@@ -5,10 +5,10 @@ PgBackMan - Administrador de copias de seguridad
 |
 | Versión-1.3.1
 |
-| Autor: Rafael Martinez Guerrero (Universidad de Oslo)
-| Correo electrónico: rafael@postgresql.org.es
+| Autor Original: Rafael Martinez Guerrero (Universidad de Oslo)
+| Autor: James Miller
+| Correo electrónico: jvaskonen@toastaddict.org
 | Código fuente: https://github.com/jvaskonen/pgbackman
-| Web: http://www.pgbackman.org/
 |
 
 .. contents::
@@ -210,7 +210,7 @@ GitHub.
 ::
 
  [root@server]# cd
- [root@server]# git clone https://github.com/rafaelma/pgbackman.git
+ [root@server]# git clone https://github.com/jvaskonen/pgbackman.git
 
  [root@server]# cd pgbackman
  [root@server]# ./setup2.py install --install-scripts=/usr/bin
@@ -218,34 +218,6 @@ GitHub.
 
 Esto instalará todos los usuarios, grupos, programas, archivos de
 configuración y el módulo de python pgbackman en tu sistema.
-
-
-Instalando desde paquetes RPM
------------------------------
-
-Paquetes RPM para CentOS 6/7 y RHEL6/7 están disponibles en:
-http://www.pgbackman.org/download.html
-
-Instalar el paquete RPM con::
-
-  [root@server]# rpm -Uvh pgbackman-<version>.rpm
-
-Nota: Estamos trabajando para incluir los paquetes RPM de PgBackMan en
-el repositorio oficial de PostgreSQL.
-
-
-Instalando desde paquetes Deb
------------------------------
-
-Paquetes Deb para Debian7 están disponibles en:
-http://www.pgbackman.org/download.html
-
-Instalar el paquete Deb con::
-
-  [root@server]# dpkg -i pgbackman_<version>.deb
-
-Nota: Estamos trabajando para incluir los paquetes DEB de PgBackMan en
-el repositorio oficial de PostgreSQL.
 
 
 Instalando la base de datos pgbackman
@@ -3295,7 +3267,7 @@ software, PgBackMan no está libre de errores.
 
 Si descubre algún error, mande por favor un informe a través de la
 página de GitHub disponible para este propósito:
-https://github.com/rafaelma/pgbackman/issues
+https://github.com/jvaskonen/pgbackman/issues
 
 
 Autores
@@ -3308,14 +3280,17 @@ En orden alfabético:
 | E-mail: rafael@postgresql.org.es / rafael@usit.uio.no
 | PostgreSQL-es / University Center for Information Technology (USIT), University of Oslo, Norway
 |
+| James Miller
+| E-mail: jvaskonen@toastaddict.org
 
 
 Licencia y contribuciones
 =========================
 
-PgBackMan es propiedad de Rafael Martinez Guerrero / PostgreSQL-es y
-USIT-Universidad de Oslo, y el código fuente es distribuido bajo la
-licencia GNU General Public License 3.
+PgBackMan es propiedad de Rafael Martinez Guerrero / PostgreSQL-es,
+James Miller y USIT-Universidad de Oslo, y el código fuente es distribuido
+bajo la icencia GNU General Public License 3.
 
 | Copyright © 2013-2014 Rafael Martinez Guerrero / PostgreSQL-es
 | Copyright © 2014 USIT-University of Oslo.
+| Copyright © 2023 James Miller

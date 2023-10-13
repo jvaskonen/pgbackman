@@ -1,12 +1,13 @@
 #!/usr/bin/env python2
 #
 # Copyright (c) 2013-2014 Rafael Martinez Guerrero / PostgreSQL-es
-# rafael@postgresql.org.es / http://www.postgresql.org.es/
 #
-# Copyright (c) 2014 USIT-University of Oslo 
+# Copyright (c) 2014 USIT-University of Oslo
+#
+# Copyright (c) 2023 James Miller
 #
 # This file is part of Pgbackman
-# https://github.com/rafaelma/pgbackman
+# https://github.com/jvaskonen/pgbackman
 #
 # Pgbackman is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,9 +79,9 @@ try:
     setup(name='pgbackman',
           version=pgbackman['__version__'].split(':')[1],
           description='PGBACKMAN - PostgreSQL Backup Manager',
-          author='Rafael Martinez Guerrero',
-          author_email='rafael@postgresql.org.es',
-          url='http://www.pgbackman.org/',
+          author='James Miller',
+          author_email='jvaskonen@toastaddict.org',
+          url='https://github.com/jvaskonen/pgbackman',
           packages=['pgbackman',],
           scripts=['bin/pgbackman','bin/pgbackman_control','bin/pgbackman_maintenance','bin/pgbackman_dump','bin/pgbackman_restore','bin/pgbackman_zabbix_autodiscovery','bin/pgbackman_status_info','bin/pgbackman_alerts','bin/pgbackman-bulk-update'],
           data_files=install_files,

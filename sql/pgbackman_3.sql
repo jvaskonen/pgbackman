@@ -2,12 +2,13 @@
 -- PgBackMan database - Upgrade from 2:1_1_0 to 3:1_2_0
 --
 -- Copyright (c) 2013-2015 Rafael Martinez Guerrero / PostgreSQL-es
--- rafael@postgresql.org.es / http://www.postgresql.org.es/
 --
 -- Copyright (c) 2015 USIT-University of Oslo
 --
+-- Copyright (c) 2023 James Miller
+--
 -- This file is part of PgBackMan
--- https://github.com/rafaelma/pgbackman
+-- https://github.com/jvaskonen/pgbackman
 --
 
 BEGIN;

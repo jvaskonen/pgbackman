@@ -8,8 +8,8 @@
 # Short-Description: PostgreSQL Backup Manager
 ### END INIT INFO
 
-# Author: Rafael Martinez Guerrero <rafael@postgresql.org.es>
-# Homepage: http://www.pgbackman.org/
+# Author: James Miller <jvaskonen@toastaddict.org>
+# Homepage: https://github.com/jvaskonen/pgbackman
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC=pgbackman                    # Introduce a short description here
