@@ -54,18 +54,17 @@ New features
   via the PgBackMan shell.
 
 
-Migration to 1.1.0
-------------------
+Migration
+---------
 
-It is very important to check the upgrade procedure to version 1.1.0
-in the documentation to avoid problems and errors when and after
-upgrading to the new version.
+It is very important to check the upgrade procedure to version in the
+documentation to avoid problems and errors when and after upgrading to
+the new version.
 
 Check the documentation: 
 
-* **[All versions]:** http://www.pgbackman.org/docs/
-* **[English]:** http://www.pgbackman.org/docs/pgbackman-manual-1.1.0.html
-* **[Español]:** http://www.pgbackman.org/docs/pgbackman-manual-1.1.0_es.html
+* **[English]:** https://github.com/jvaskonen/pgbackman/blob/main/docs/manual.rst
+* **[Español]:** https://github.com/jvaskonen/pgbackman/blob/main/docs/manual_es.rst
 
 
 Bugfixes

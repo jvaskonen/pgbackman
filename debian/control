@@ -1,12 +1,12 @@
 Source: pgbackman
 Section: database
 Priority: optional
-Maintainer: Rafael Martinez Guerrero <rafael@e-mc2.net>
+Maintainer: James Miller <jvaskonen@toastaddict.org>
 Build-Depends: debhelper (>= 9~)
  , python | python-all | python-dev | python-all-dev
  , python-setuptools
 Standards-Version: 3.9.8
-Homepage: http://www.pgbackman.org/
+Homepage: https://github.com/jvaskonen/pgbackman
 Vcs-Browser: https://github.com/jvaskonen/pgbackman
 Vcs-Git: git://github.com/jvaskonen/pgbackman.git
 X-Python-Version: >= 2.6

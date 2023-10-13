@@ -1,7 +1,7 @@
 #
 # File: pgbackman.spec
 #
-# Autor: Rafael Martinez <rafael@postgreslq.org.es>
+# Autor: James Miller <jvaskonen@toastaddict.org>
 #  
 
 %define majorversion 1.3
@@ -18,7 +18,7 @@ Version:        %{majorversion}.%{minorversion}
 Release:        1%{?dist}
 License:        GPLv3
 Group:          Applications/Databases
-Url:            http://www.pgbackman.org/
+Url:            https://github.com/jvaskonen/pgbackman
 Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 BuildArch:      noarch
