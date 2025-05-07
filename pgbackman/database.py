@@ -2924,7 +2924,7 @@ class PgbackmanDB():
     # Method
     # ############################################
 
-    def update_backup_definition(self,def_id,minutes_cron,hours_cron,weekday_cron,month_cron,day_month_cron,retention_period,
+    def update_backup_definition(self,def_id,minutes_cron,hours_cron,day_month_cron,month_cron,weekday_cron,retention_period,
                                  retention_redundancy,extra_backup_parameters,job_status,remarks):
         """A function to update a backup definition"""
 
@@ -2936,9 +2936,9 @@ class PgbackmanDB():
                     self.cur.execute('SELECT update_backup_definition(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',(def_id,
                                                                                                           minutes_cron,
                                                                                                           hours_cron,
-                                                                                                          weekday_cron,
-                                                                                                          month_cron,
                                                                                                           day_month_cron,
+                                                                                                          month_cron,
+                                                                                                          weekday_cron,
                                                                                                           retention_period,
                                                                                                           retention_redundancy,
                                                                                                           extra_backup_parameters,

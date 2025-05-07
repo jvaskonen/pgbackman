@@ -3,7 +3,7 @@ PgBackMan - Administrador de copias de seguridad
 ================================================
 
 |
-| Versión-1.3.1
+| Versión-1.3.2
 |
 | Autor Original: Rafael Martinez Guerrero (Universidad de Oslo)
 | Autor: James Miller
