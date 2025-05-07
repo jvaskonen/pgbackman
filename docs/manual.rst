@@ -3,7 +3,7 @@ PgBackMan - PostgreSQL Backup Manager
 =====================================
 
 |
-| Version-1.3.1
+| Version-1.3.2
 |
 | Original Author: Rafael Martinez Guerrero (University of Oslo)
 | Author: James Miller

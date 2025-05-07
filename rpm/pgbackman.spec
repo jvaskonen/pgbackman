@@ -5,7 +5,7 @@
 #  
 
 %define majorversion 1.3
-%define minorversion 1
+%define minorversion 2
 %define pbm_owner pgbackman
 %define pbm_group pgbackman
 %define __python /usr/bin/python2
@@ -74,11 +74,14 @@ useradd -M -N -g pgbackman -r -d /var/lib/pgbackman -s /bin/bash \
         -c "PostgreSQL Backup Manager" pgbackman >/dev/null 2>&1 || :
 
 %changelog
-* Wed May 25 2023 - James Miller <jvaskonen@toastaddict.org> 1.3.1-1
+* Tue May 06 2025 - James Miller <jvaskonen@toastaddict.org> 1.3.2-1
+- New release 1.3.2
+
+* Thu May 25 2023 - James Miller <jvaskonen@toastaddict.org> 1.3.1-1
 - New release 1.3.1
 
 * Tue Jun 13 2017 - Rafael Martinez Guerrero <rafael@postgresql.org.es> 1.2.0-1
 - New release 1.0.0
 
-* Mon Jun 24 2014 - Rafael Martinez Guerrero <rafael@postgresql.org.es> 1.0.0-1
+* Tue Jun 24 2014 - Rafael Martinez Guerrero <rafael@postgresql.org.es> 1.0.0-1
 - New release 1.0.0

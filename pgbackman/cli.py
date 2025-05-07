@@ -3441,7 +3441,7 @@ class PgbackmanCli(cmd.Cmd):
                 else:
                     pgsql_node_id = self.db.get_pgsql_node_id(node_id)
 
-                result = self.db.show_backup_server_stats(pgsql_node_id)
+                result = self.db.show_pgsql_node_stats(pgsql_node_id)
 
                 if len(result) > 0:
                     self.generate_unique_output(result,'pgsql_node_stats')
@@ -5754,7 +5754,7 @@ class PgbackmanCli(cmd.Cmd):
 
             if ack.lower() == 'yes':
                 try:
-                    self.db.update_backup_definition(def_id,minutes_cron,hours_cron,weekday_cron,month_cron,day_month_cron,retention_period,
+                    self.db.update_backup_definition(def_id,minutes_cron,hours_cron,day_month_cron,month_cron,weekday_cron,retention_period,
                                                      retention_redundancy,extra_backup_parameters,job_status.upper(),remarks)
 
                     print '[DONE] Backup definition DefID: ' + str(def_id) + ' updated.\n'
